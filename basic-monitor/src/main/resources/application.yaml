@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: basic-monitor
+  profiles:
+    active: run
+
+server:
+  port: 8001
+
+# ?????????????????????/actuator/*?
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

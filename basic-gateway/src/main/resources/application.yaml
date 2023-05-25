@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: basic-gateway
+  profiles:
+    active: dev
+
+server:
+  port: 8888
+
+# 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS

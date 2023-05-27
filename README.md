@@ -28,14 +28,14 @@ docker pull mysql:8.0.29
 
 启动镜像容器 oneplatform-mysql，要求：
 
-- 容器`/etc/mysql/conf.d`挂载到服务器`/root/one-platform/mysql/conf`，存放配置文件；
-- 容器`/var/lib/mysql`挂载到服务器`/root/one-platform/mysql/data`存放数据；
-- 容器`/var/log/mysql`挂载到服务器`/root/one-platform/mysql/logs`存放日志；
-- 绑定9000端口；
+- 容器`/etc/mysql/conf.d`用 rw 模式挂载到服务器`/root/one-platform/mysql/conf`，存放配置文件；
+- 容器`/var/lib/mysql`用 rw 模式挂载到服务器`/root/one-platform/mysql/data`存放数据；
+- 容器`/var/log/mysql用rw模式`挂载到服务器`/root/one-platform/mysql/logs`存放日志；
+- 绑定 9000 端口；
 - 自动重启。
 
 ```shell
-docker run --name oneplatform-mysql -v /root/one-platform/mysql/conf:/etc/mysql/conf.d -v /root/one-platform/mysql/data:/var/lib/mysql -v /root/one-platform/mysql/logs:/var/log/mysql -e MYSQL_ROOT_PASSWORD=密码 -p 9000:3306 --restart=unless-stopped -d mysql:8.0.29
+docker run --name oneplatform-mysql -v /root/one-platform/mysql/conf:/etc/mysql/conf.d:rw -v /root/one-platform/mysql/data:/var/lib/mysql:rw -v /root/one-platform/mysql/logs:/var/log/mysql:rw -e MYSQL_ROOT_PASSWORD=密码 -p 9000:3306 --restart=unless-stopped -d mysql:8.0.29
 ```
 
 初始化数据库。首先启动数据库交互终端，用 root 用户登录：
@@ -44,8 +44,7 @@ docker run --name oneplatform-mysql -v /root/one-platform/mysql/conf:/etc/mysql/
 docker exec -it oneplatform-mysql mysql -uroot -p
 ```
 
-输入密码登录后执行以下SQL，创建数据库：
-
+输入密码登录后执行以下 SQL，创建数据库：
 
 ```mysql
 create database db_oneplatform;
@@ -53,6 +52,3 @@ quit;
 ```
 
 ### 部署微服务应用
-
-
-

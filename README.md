@@ -14,11 +14,12 @@ OnePlatform - 统一平台，定位为 WyattAppRealm 系列应用中大一统的
   - basic-gateway 服务网关（8000 端口）
   - basic-registry 服务注册中心（8500 端口）
   - basic-monitor 服务监控中心（8001 端口）
+  - basic-user 用户中心（8002 端口）：基于 RBAC 用户权限管理，认证授权。
 - 业务模块
 
 ## 部署
 
-### 部署 MySQL 数据库
+### 部署数据库
 
 拉取 MySQL 8.0.29 数据库 docker 镜像：
 
@@ -30,7 +31,7 @@ docker pull mysql:8.0.29
 
 - 容器`/etc/mysql/conf.d`用 rw 模式挂载到服务器`/root/one-platform/mysql/conf`，存放配置文件；
 - 容器`/var/lib/mysql`用 rw 模式挂载到服务器`/root/one-platform/mysql/data`存放数据；
-- 容器`/var/log/mysql用rw模式`挂载到服务器`/root/one-platform/mysql/logs`存放日志；
+- 容器`/var/log/mysql`用 rw 模式挂载到服务器`/root/one-platform/mysql/logs`存放日志；
 - 绑定 9000 端口；
 - 自动重启。
 
@@ -52,3 +53,44 @@ quit;
 ```
 
 ### 部署微服务应用
+
+构建镜像前，先将配置从测试环境改成生产环境，maven 构建 jar 包：
+
+```yaml
+spring:
+  profiles:
+    active: run
+```
+
+在项目根目录下构建 Dockerfile，按照如下模板填入构建命令：
+
+```dockerfile
+# 拉取基镜像
+FROM openjdk:15.0.2-oraclelinux8
+# jar包添加到镜像中（PS：换成对应应用生成的jar包名称）
+ADD target/basic-monitor.jar application.jar
+# 容器运行时执行的命令
+ENTRYPOINT ["java", "-jar", "/application.jar"]
+# 容器对外暴露的端口（PS：换成端口）
+EXPOSE 8001
+```
+
+构建镜像并推送到 dockerhub 仓库：
+
+```shell
+# 在Dockerfile文件所在目录下运行（PS：换成应用对应的镜像名称和标签号）
+docker build -t wyatt6/basic-monitor:1.0.0 ./
+# （PS：换成应用对应的镜像名称和标签号）
+docker push wyatt6/basic-monitor:1.0.0
+```
+
+拉取镜像并运行容器：
+
+```shell
+# 创建容器网络
+docker network create oneplatform-net
+# （PS：换成应用对应的镜像名称和标签号）
+docker pull wyatt6/basic-monitor:1.0.0
+# （PS：换成应用对应的镜像名称和标签号）
+docker run --name basic-monitor -d -p 8001:8001/tcp --net oneplatform-net --restart=unless-stopped -e TZ="Asia/Shanghai" wyatt6/basic-monitor:1.0.0
+```

@@ -2,7 +2,7 @@ spring:
   application:
     name: basic-gateway
   profiles:
-    active: dev
+    active: run
 
 server:
   port: 9000

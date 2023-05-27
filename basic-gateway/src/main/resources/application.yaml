@@ -5,7 +5,7 @@ spring:
     active: dev
 
 server:
-  port: 8888
+  port: 9000
 
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
 management:

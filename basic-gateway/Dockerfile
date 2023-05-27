@@ -5,4 +5,4 @@ ADD target/basic-gateway.jar application.jar
 # 容器运行时执行的命令
 ENTRYPOINT ["java", "-jar", "/application.jar"]
 # 容器对外暴露的端口
-EXPOSE 8888
+EXPOSE 8000

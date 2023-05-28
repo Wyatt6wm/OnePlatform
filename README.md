@@ -49,7 +49,6 @@ docker exec -it oneplatform-mysql mysql -uroot -p
 
 ```mysql
 create database db_oneplatform;
-quit;
 ```
 
 ### 部署微服务应用
@@ -91,6 +90,7 @@ docker push wyatt6/basic-monitor:1.0.0
 docker network create oneplatform-net
 # （PS：换成应用对应的镜像名称和标签号）
 docker pull wyatt6/basic-monitor:1.0.0
-# （PS：换成应用对应的镜像名称和标签号）
+# 生产态不需要暴露端口则不绑定端口（PS：换成应用对应的容器名、端口号、镜像名和标签号）
 docker run --name basic-monitor -d -p 8001:8001/tcp --net oneplatform-net --restart=unless-stopped -e TZ="Asia/Shanghai" wyatt6/basic-monitor:1.0.0
 ```
+

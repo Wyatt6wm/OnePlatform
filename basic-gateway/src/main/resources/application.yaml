@@ -2,10 +2,19 @@ spring:
   application:
     name: basic-gateway
   profiles:
-    active: run
+    active: dev
+
+  # 服务网关
+  cloud:
+    gateway:
+      routes:
+        - id: login
+          uri: http://${uri-host.basic-user}:8002
+          predicates:
+            - Path=/api/login
 
 server:
-  port: 9000
+  port: 8000
 
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
 management:

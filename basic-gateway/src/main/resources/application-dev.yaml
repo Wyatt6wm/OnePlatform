@@ -11,4 +11,7 @@ spring:
       port: 8500
       discovery:
         serviceName: ${spring.application.name}
-    # 服务网关
+
+uri-host:
+  basic-monitor: localhost
+  basic-user: localhost

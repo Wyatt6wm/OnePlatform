@@ -2,8 +2,7 @@
 
 ```shell
 docker pull consul:1.15.2
-docker run --name basic-registry -d -p 8500:8500 --restart=unless-stopped consul:1.15.2
+docker run --name oneplatform-registry -d -p 8500:8500 --net oneplatform-net --restart=unless-stopped consul:1.15.2
 ```
 
-将容器接入 docker 网络，详见 README.md 文件。
 

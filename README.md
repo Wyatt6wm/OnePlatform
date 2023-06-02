@@ -11,9 +11,9 @@ OnePlatform - 统一平台，定位为 WyattAppRealm 系列应用中大一统的
 ## 3. 组件和模块
 
 - 基础组件
-  - basic-gateway 服务网关（8000 端口）
-  - basic-registry 服务注册中心（8500 端口）
-  - basic-monitor 服务监控中心（8001 端口）
+  - oneplatform-gateway 服务网关（8000 端口）
+  - oneplatform-registry 服务注册中心（8500 端口）
+  - oneplatform-monitor 服务监控中心（8001 端口）
   - basic-user 用户中心（8002 端口）：基于 RBAC 用户权限管理，认证授权。
 - 业务模块
 
@@ -67,7 +67,7 @@ spring:
 # 拉取基镜像
 FROM openjdk:15.0.2-oraclelinux8
 # jar包添加到镜像中（PS：换成对应应用生成的jar包名称）
-ADD target/basic-monitor.jar application.jar
+ADD target/oneplatform-monitor.jar application.jar
 # 容器运行时执行的命令
 ENTRYPOINT ["java", "-jar", "/application.jar"]
 # 容器对外暴露的端口（PS：换成端口）
@@ -78,9 +78,9 @@ EXPOSE 8001
 
 ```shell
 # 在Dockerfile文件所在目录下运行（PS：换成应用对应的镜像名称和标签号）
-docker build -t wyatt6/basic-monitor:1.0.0 ./
+docker build -t wyatt6/oneplatform-monitor:1.0.0 ./
 # （PS：换成应用对应的镜像名称和标签号）
-docker push wyatt6/basic-monitor:1.0.0
+docker push wyatt6/oneplatform-monitor:1.0.0
 ```
 
 拉取镜像并运行容器：
@@ -89,8 +89,8 @@ docker push wyatt6/basic-monitor:1.0.0
 # 创建容器网络
 docker network create oneplatform-net
 # （PS：换成应用对应的镜像名称和标签号）
-docker pull wyatt6/basic-monitor:1.0.0
+docker pull wyatt6/oneplatform-monitor:1.0.0
 # 生产态不需要暴露端口则不绑定端口（PS：换成应用对应的容器名、端口号、镜像名和标签号）
-docker run --name basic-monitor -d -p 8001:8001/tcp --net oneplatform-net --restart=unless-stopped -e TZ="Asia/Shanghai" wyatt6/basic-monitor:1.0.0
+docker run --name oneplatform-monitor -d -p 8001:8001/tcp --net oneplatform-net --restart=unless-stopped -e TZ="Asia/Shanghai" wyatt6/basic-monitor:1.0.0
 ```
 

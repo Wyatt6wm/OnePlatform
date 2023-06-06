@@ -11,11 +11,15 @@ OnePlatform - 统一平台，定位为 WyattAppRealm 系列应用中大一统的
 ## 3. 组件和模块
 
 - 基础组件
-  - oneplatform-gateway 服务网关（8000 端口）
-  - oneplatform-registry 服务注册中心（8500 端口）
-  - oneplatform-monitor 服务监控中心（8001 端口）
-  - basic-user 用户中心（8002 端口）：基于 RBAC 用户权限管理，认证授权。
+  - oneplatform-common 公共模块：定义公共的类、配置、工具、能力等。
+  - oneplatform-gateway 服务网关（8000 端口）：鉴权、路由。
+  - oneplatform-registry 服务注册中心（8500 端口）。
+  - oneplatform-monitor 服务监控中心（8001 端口）。
+  - oneplatform-user 用户中心（8002 端口）：基于 RBAC 用户权限管理，认证授权。
+  - oneplatform-cache 缓存服务（）。
+  - oneplatform-mysql 数据库（9000 端口）。
 - 业务模块
+    - 
 
 ## 部署
 
@@ -49,6 +53,13 @@ docker exec -it oneplatform-mysql mysql -uroot -p
 
 ```mysql
 create database db_oneplatform;
+```
+
+创建数据库访问用户并授权：
+
+```mysql
+create user 'oneplatform_access'@'%' identified by '密码';
+grant all privileges on oneplatform.* to oneplatform_access@'%';
 ```
 
 ### 部署微服务应用
@@ -91,6 +102,6 @@ docker network create oneplatform-net
 # （PS：换成应用对应的镜像名称和标签号）
 docker pull wyatt6/oneplatform-monitor:1.0.0
 # 生产态不需要暴露端口则不绑定端口（PS：换成应用对应的容器名、端口号、镜像名和标签号）
-docker run --name oneplatform-monitor -d -p 8001:8001/tcp --net oneplatform-net --restart=unless-stopped -e TZ="Asia/Shanghai" wyatt6/basic-monitor:1.0.0
+docker run --name oneplatform-monitor -d -p 8001:8001/tcp --net oneplatform-net --restart=unless-stopped -e TZ="Asia/Shanghai" wyatt6/oneplatform-monitor:1.0.0
 ```
 

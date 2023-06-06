@@ -2,7 +2,7 @@
 
 ```shell
 docker pull consul:1.15.2
-docker run --name op-registry -d -p 8500:8500 --net oneplatform-net --restart=unless-stopped consul:1.15.2
+docker run --name oneplatform-registry -d -p 8500:8500 --net oneplatform-net --restart=unless-stopped consul:1.15.2
 ```
 
 

@@ -3,11 +3,11 @@ spring:
     # 服务监控
     admin:
       client:
-        url: "http://basic-monitor:8001"
+        url: "http://oneplatform-monitor:8001"
   cloud:
     # 服务注册
     consul:
-      host: basic-registry
+      host: oneplatform-registry
       port: 8500
       discovery:
         serviceName: ${spring.application.name}

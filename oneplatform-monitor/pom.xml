@@ -3,10 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>run.wyatt</groupId>
-    <artifactId>basic-monitor</artifactId>
+    <artifactId>oneplatform-monitor</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>basic-monitor</name>
 
     <properties>
         <java.version>15</java.version>
@@ -65,7 +64,7 @@
     </dependencies>
 
     <build>
-        <finalName>basic-monitor</finalName>
+        <finalName>oneplatform-monitor</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

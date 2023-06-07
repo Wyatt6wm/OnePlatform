@@ -1,6 +1,6 @@
 spring:
   application:
-    name: basic-user
+    name: oneplatform-user
   profiles:
     active: dev
 

@@ -3,10 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>run.wyatt</groupId>
-    <artifactId>basic-common</artifactId>
+    <artifactId>oneplatform-common</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
-    <name>basic-common</name>
 
     <properties>
         <java.version>15</java.version>

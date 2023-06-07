@@ -62,6 +62,10 @@ create user 'oneplatform_access'@'%' identified by '密码';
 grant all privileges on oneplatform.* to oneplatform_access@'%';
 ```
 
+### 部署缓存
+
+
+
 ### 部署微服务应用
 
 构建镜像前，先将配置从测试环境改成生产环境，maven 构建 jar 包：

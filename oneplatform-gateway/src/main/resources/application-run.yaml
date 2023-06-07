@@ -1,0 +1,13 @@
+oneplatform:
+  registry:
+    host: oneplatform-registry
+    port: 8500
+  gateway:
+    host: oneplatform-gateway
+    port: 8000
+  monitor:
+    host: oneplatform-monitor
+    port: 8001
+  user:
+    host: oneplatform-user
+    port: 8002

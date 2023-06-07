@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: oneplatform-gateway
+  profiles:
+    active: dev
+
+  cloud:
+    # 服务网关
+    gateway:
+      routes:
+        - id: login
+          uri: http://${oneplatform.user.host}:${oneplatform.user.port}
+          predicates:
+            - Path=/api/login
+
+    # 服务注册
+    consul:
+      host: ${oneplatform.registry.host}
+      port: ${oneplatform.registry.port}
+      discovery:
+        serviceName: ${spring.application.name}
+
+  boot:
+    # 服务监控
+    admin:
+      client:
+        url: http://${oneplatform.monitor.host}:${oneplatform.monitor.port}
+
+server:
+  port: 8000
+
+# 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS

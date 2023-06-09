@@ -58,8 +58,8 @@ create database db_oneplatform;
 创建数据库访问用户并授权：
 
 ```mysql
-create user 'oneplatform_access'@'%' identified by '密码';
-grant all privileges on oneplatform.* to oneplatform_access@'%';
+create user 'db_access'@'%' identified by '密码';
+grant all privileges on db_oneplatform.* to db_access@'%';
 ```
 
 ### 部署缓存

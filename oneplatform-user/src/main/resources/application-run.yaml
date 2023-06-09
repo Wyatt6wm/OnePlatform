@@ -11,3 +11,8 @@ spring:
       port: 8500
       discovery:
         serviceName: ${spring.application.name}
+
+sys:
+  db:
+    host: oneplatform-mysql
+    port: 9000

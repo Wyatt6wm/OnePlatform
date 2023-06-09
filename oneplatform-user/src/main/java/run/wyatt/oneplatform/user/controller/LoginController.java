@@ -46,22 +46,30 @@ public class LoginController {
 
     // 登录
     @PostMapping("/login")
-    public HttpResult login(@RequestBody LoginForm loginForm) {
+    public HttpResult login(HttpServletRequest request, @RequestBody LoginForm loginForm) {
         try {
             Assert.notNull(loginForm, "请求参数不能为空");
             Assert.hasText(loginForm.getUsername(), "用户名不能为空");
             Assert.hasText(loginForm.getPassword(), "密码不能为空");
             Assert.hasText(loginForm.getVerifyCode(), "验证码不能为空");
         } catch (Exception e) {
-            return HttpResult.error()
+            return HttpResult.fail(e.getMessage());
         }
 
-//        String username = (String) query.get("username");
-//        String password = (String) query.get("password");
-        // TODO 校验用户名密码，同时获取用户ID
-        // TODO 生成token和过期时间
+        // 校验验证码
+        String verifyCode = loginForm.getVerifyCode();
+        Object kaptchaText = request.getSession().getAttribute(Constants.KAPTCHA_SESSION_KEY);
+        if (kaptchaText == null) {
+            return HttpResult.fail("验证码失效");
+        }
+        if (!verifyCode.equals(kaptchaText)) {
+            return HttpResult.fail("验证码错误");
+        }
+
+        // TODO 校验用户名密码，同时获取用户ID、用户信息
         // TODO 获取用户权限
-        // TODO Redis缓存关键要素（key：token，value：用户ID、token过期时间、用户权限）
+        // TODO 生成token和过期时间
+        // TODO 缓存关键要素（key：token，value：用户ID、token过期时间、用户权限）
         // TODO 返回响应数据
 //        if (username.equals("administrator") && password.equals("abc123456")) {
 //            Map<String, Object> data = new HashMap<>();
@@ -71,7 +79,7 @@ public class LoginController {
 //        } else {
 //            return HttpResult.error(HttpCodes.AUTH_FAIL_USERNAME_PASSWORD_INCORRECT, "账户或密码不正确", null);
 //        }
-        
+
         return null;
     }
 }

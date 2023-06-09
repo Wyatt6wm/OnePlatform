@@ -13,23 +13,38 @@ import lombok.Data;
 @AllArgsConstructor
 public class HttpResult {
     private Boolean succ;   // 业务处理成功标志true/false
-    private Integer code;   // 响应码
     private String mesg;    // 响应消息
     private Object data;    // 响应数据
 
-    public static HttpResult success(Integer code, String mesg, Object data) {
-        HttpResult r = new HttpResult(true, HttpCodes.DEFAULT_SUCCESS, "处理成功", null);
-        if (code != null) r.setCode(code);
-        if (mesg != null) r.setMesg(mesg);
-        if (data != null) r.setData(data);
-        return r;
+    public static HttpResult success(String mesg, Object data) {
+        return new HttpResult(true, mesg, data);
     }
 
-    public static HttpResult error(Integer code, String mesg, Object data) {
-        HttpResult r = new HttpResult(false, HttpCodes.DEFAULT_ERROR, "处理失败", null);
-        if (code != null) r.setCode(code);
-        if (mesg != null) r.setMesg(mesg);
-        if (data != null) r.setData(data);
-        return r;
+    public static HttpResult success(String mesg) {
+        return new HttpResult(true, mesg, null);
+    }
+
+    public static HttpResult success(Object data) {
+        return new HttpResult(true, "处理成功", data);
+    }
+
+    public static HttpResult success() {
+        return new HttpResult(true, "处理成功", null);
+    }
+
+    public static HttpResult fail(String mesg, Object data) {
+        return new HttpResult(false, mesg, data);
+    }
+
+    public static HttpResult fail(String mesg) {
+        return new HttpResult(false, mesg, null);
+    }
+
+    public static HttpResult fail(Object data) {
+        return new HttpResult(false, "处理失败", data);
+    }
+
+    public static HttpResult fail() {
+        return new HttpResult(false, "处理失败", null);
     }
 }

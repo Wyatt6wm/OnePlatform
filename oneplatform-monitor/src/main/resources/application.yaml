@@ -1,11 +1,11 @@
+server:
+  port: 8001
+
 spring:
   application:
     name: oneplatform-monitor
   profiles:
     active: run
-
-server:
-  port: 8001
 
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
 management:

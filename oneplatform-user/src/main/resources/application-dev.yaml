@@ -11,7 +11,9 @@ spring:
       port: 8500
       discovery:
         serviceName: ${spring.application.name}
-sys:
-  db:
-    host: wyatt.run
-    port: 9000
+db:
+  host: wyatt.run
+  port: 9001
+  username: db_access
+  password: ZcM+U9TaIXGvLrhKzhnJiPH0QGzQL7NGFHVbbb219fIj9ygwEkxOTyZtrty4T/BoUWXC3pIWwd4UMJFyptmQig==
+  public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJZ9U8a/J21XyV9PJXqNS8pMgqnqtv7siGDQ6lSUtlCfUfnkoBsN7cDUwqKZB9ytLAD9LcAvDoxkMpmRE2WBjwECAwEAAQ==

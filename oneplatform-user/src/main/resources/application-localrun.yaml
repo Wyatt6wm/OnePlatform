@@ -12,8 +12,8 @@ spring:
       discovery:
         serviceName: ${spring.application.name}
 db:
-  host: oneplatform-mysql
-  port: 9000
+  host: wyatt.run
+  port: 9001
   username: db_access
-  password: unkown
-  public-key: unkown
+  password: ZcM+U9TaIXGvLrhKzhnJiPH0QGzQL7NGFHVbbb219fIj9ygwEkxOTyZtrty4T/BoUWXC3pIWwd4UMJFyptmQig==
+  public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJZ9U8a/J21XyV9PJXqNS8pMgqnqtv7siGDQ6lSUtlCfUfnkoBsN7cDUwqKZB9ytLAD9LcAvDoxkMpmRE2WBjwECAwEAAQ==

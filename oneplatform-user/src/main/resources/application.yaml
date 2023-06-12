@@ -2,7 +2,7 @@ server:
   port: 8002
 spring:
   profiles:
-    active: dev # 开发环境：run，测试环境：dev
+    active: dev # 开发环境：run，测试环境：dev，本地运行：localrun（连的测试数据库）
   application:
     name: oneplatform-user
   boot:
@@ -12,17 +12,15 @@ spring:
         url: "http://localhost:8001"
   # druid数据源
   datasource:
-    name: DruidDataSource
-    type: com.alibaba.druid.pool.DruidDataSource
-
+    # 数据库连接参数
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://wyatt.run:9000/db_oneplatform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
-    username: db_access
-    password: ZcM+U9TaIXGvLrhKzhnJiPH0QGzQL7NGFHVbbb219fIj9ygwEkxOTyZtrty4T/BoUWXC3pIWwd4UMJFyptmQig==
-    public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJZ9U8a/J21XyV9PJXqNS8pMgqnqtv7siGDQ6lSUtlCfUfnkoBsN7cDUwqKZB9ytLAD9LcAvDoxkMpmRE2WBjwECAwEAAQ==
-
+    url: jdbc:mysql://${db.host}:${db.port}/db_oneplatform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
+    username: ${db.username}
+    password: ${db.password}
+    # Druid连接池配置
+    type: com.alibaba.druid.pool.DruidDataSource
     filters: config,stat,wall,log4j
-    connection-properties: config.decrypt=true;config.decrypt.key=${spring.datasource.public-key}
+    connection-properties: config.decrypt=true;config.decrypt.key=${db.public-key}
     max-active: 100
     initial-size: 1
     max-wait: 60000
@@ -36,7 +34,6 @@ spring:
     pool-prepared-statements: true
     max-open-prepared-statements: 50
     max-pool-prepared-statement-per-connection-size: 20
-
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
 management:
   endpoints:

@@ -4,6 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="run.wyatt.oneplatform.user.dao.UserDao">
     <select id="count" resultType="long">
-        select count(1) from tb_user where 1=1
+        select count(1) from tb_user
+    </select>
+    <select id="findByUsername" resultType="run.wyatt.oneplatform.user.model.entity.User">
+        select * from tb_user where username=#{username}
     </select>
 </mapper>

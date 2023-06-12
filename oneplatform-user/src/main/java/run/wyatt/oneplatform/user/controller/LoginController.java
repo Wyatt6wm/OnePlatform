@@ -2,11 +2,16 @@ package run.wyatt.oneplatform.user.controller;
 
 import com.google.code.kaptcha.Constants;
 import com.google.code.kaptcha.Producer;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import run.wyatt.oneplatform.common.http.HttpResult;
+import run.wyatt.oneplatform.user.model.entity.Permission;
+import run.wyatt.oneplatform.user.model.entity.User;
 import run.wyatt.oneplatform.user.model.form.LoginForm;
+import run.wyatt.oneplatform.user.service.PermissionService;
+import run.wyatt.oneplatform.user.service.UserService;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -14,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Wyatt
@@ -24,6 +30,10 @@ import java.io.IOException;
 public class LoginController {
     @Autowired
     private Producer producer;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PermissionService permissionService;
 
     // 获取验证码
     @GetMapping("/getKaptcha")
@@ -66,8 +76,26 @@ public class LoginController {
             return HttpResult.fail("验证码错误");
         }
 
-        // TODO 校验用户名密码，同时获取用户ID、用户信息
-        // TODO 获取用户权限
+        // 验证用户名密码
+        User user = null;
+        try {
+            user = userService.verifyUserByUsername(loginForm.getUsername(), loginForm.getPassword());
+        } catch (Exception e) {
+            return HttpResult.fail(e.getMessage());
+        }
+        user.setPassword(null);
+        user.setSalt(null);
+
+        // 获取用户权限
+        List<Permission> permissions = null;
+        if (user.getId() != null) {
+            try {
+                permissions = permissionService.getPermissionsByUserId(user.getId());
+            } catch (Exception e) {
+                return HttpResult.fail(e.getMessage());
+            }
+        }
+
         // TODO 生成token和过期时间
         // TODO 缓存关键要素（key：token，value：用户ID、token过期时间、用户权限）
         // TODO 返回响应数据

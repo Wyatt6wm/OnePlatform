@@ -67,18 +67,18 @@ public class LoginController {
             Assert.notNull(loginForm, "请求参数不能为空");
             Assert.hasText(loginForm.getUsername(), "用户名不能为空");
             Assert.hasText(loginForm.getPassword(), "密码不能为空");
-            Assert.hasText(loginForm.getVerifyCode(), "验证码不能为空");
+//            Assert.hasText(loginForm.getVerifyCode(), "验证码不能为空");
         } catch (Exception e) {
             return HttpResult.fail(e.getMessage());
         }
 
         // 校验验证码
-        String verifyCode = loginForm.getVerifyCode();
+        String verifyCode = loginForm.getVerifyCode().toLowerCase();
         Object kaptchaText = request.getSession().getAttribute(Constants.KAPTCHA_SESSION_KEY);
         if (kaptchaText == null) {
             return HttpResult.fail("验证码失效");
         }
-        if (!verifyCode.equals(kaptchaText)) {
+        if (!verifyCode.equals(String.valueOf(kaptchaText).toLowerCase())) {
             return HttpResult.fail("验证码错误");
         }
 

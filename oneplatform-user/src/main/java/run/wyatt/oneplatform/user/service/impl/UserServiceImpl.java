@@ -18,17 +18,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User verifyUserByUsername(String username, String password) {
+        User user = null;
+        
         try {
-            User user = userDao.findByUsername(username);
-            if (user == null || !user.getPassword().equals(PasswordUtils.encode(password, user.getSalt()))) {
-                throw new RuntimeException("用户名或密码错误");
-            }
-
-            // TODO 检查账号状态
-
-            return user;
+            user = userDao.findByUsername(username);
         } catch (Exception e) {
             throw new RuntimeException("数据库错误");
         }
+
+        if (user == null || !user.getPassword().equals(PasswordUtils.encode(password, user.getSalt()))) {
+            throw new RuntimeException("用户名或密码错误");
+        }
+
+        // TODO 检查账号状态
+
+        return user;
     }
 }

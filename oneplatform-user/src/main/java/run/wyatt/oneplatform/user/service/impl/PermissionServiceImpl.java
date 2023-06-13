@@ -20,7 +20,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public List<Permission> getPermissionsByUserId(Long userId) {
         try {
-            return permissionDao.findActiatedPermissionsByUserId(userId);
+            return permissionDao.findActivatedPermissionsByUserId(userId);
         } catch (Exception e) {
             throw new RuntimeException("数据库错误");
         }

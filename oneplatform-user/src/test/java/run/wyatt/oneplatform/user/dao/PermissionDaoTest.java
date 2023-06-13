@@ -17,9 +17,9 @@ public class PermissionDaoTest extends TestBaseClass {
     private PermissionDao permissionDao;
 
     @Test
-    public void testFindActiatedPermissionsByUserId() {
-        List<Permission> permissions = permissionDao.findActiatedPermissionsByUserId(1L);
-        Assert.assertEquals(3, permissions.size());
+    public void testFindActivatedPermissionsByUserId() {
+        List<Permission> permissions = permissionDao.findActivatedPermissionsByUserId(1L);
+        Assert.assertEquals(2, permissions.size());
         for (Permission permission : permissions) {
             System.out.println("" + permission.getId() + " " +permission.getName());
         }

@@ -17,3 +17,6 @@ db:
   username: db_access
   password: unkown
   public-key: unkown
+redis:
+  host: oneplatform-redis
+  port: 9100

@@ -1,13 +1,12 @@
 package run.wyatt.oneplatform.user.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.google.code.kaptcha.Constants;
 import com.google.code.kaptcha.Producer;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import run.wyatt.oneplatform.common.http.HttpResult;
-import run.wyatt.oneplatform.user.model.entity.Permission;
 import run.wyatt.oneplatform.user.model.entity.User;
 import run.wyatt.oneplatform.user.model.form.LoginForm;
 import run.wyatt.oneplatform.user.service.PermissionService;
@@ -19,7 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Wyatt
@@ -54,7 +54,13 @@ public class LoginController {
         }
     }
 
-    // 登录
+    /**
+     * 登录认证
+     *
+     * @param request 请求HTTP对象
+     * @param loginForm {username 用户名, password 密码, verifyCode验证码}
+     * @return 详见接口文档
+     */
     @PostMapping("/login")
     public HttpResult login(HttpServletRequest request, @RequestBody LoginForm loginForm) {
         try {
@@ -80,34 +86,24 @@ public class LoginController {
         User user = null;
         try {
             user = userService.verifyUserByUsername(loginForm.getUsername(), loginForm.getPassword());
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             return HttpResult.fail(e.getMessage());
         }
         user.setPassword(null);
         user.setSalt(null);
 
-        // 获取用户权限
-        List<Permission> permissions = null;
-        if (user.getId() != null) {
-            try {
-                permissions = permissionService.getPermissionsByUserId(user.getId());
-            } catch (Exception e) {
-                return HttpResult.fail(e.getMessage());
-            }
-        }
+        // 登录：Sa-Token框架自动生成token、获取角色和权限，并缓存到Redis
+        StpUtil.login(user.getId());
+        // TODO 缓存用户信息
 
-        // TODO 生成token和过期时间
-        // TODO 缓存关键要素（key：token，value：用户ID、token过期时间、用户权限）
-        // TODO 返回响应数据
-//        if (username.equals("administrator") && password.equals("abc123456")) {
-//            Map<String, Object> data = new HashMap<>();
-//            data.put("token", "d8c6ed7a3fd446e4a477b20d1ce9cda0");
-//            data.put("tokenExpiredTime", new Date());
-//            return HttpResult.success(HttpCodes.AUTHENTICATED, "认证成功", data);
-//        } else {
-//            return HttpResult.error(HttpCodes.AUTH_FAIL_USERNAME_PASSWORD_INCORRECT, "账户或密码不正确", null);
-//        }
+        // 组装响应对象
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", StpUtil.getTokenInfo().getTokenValue());
+        data.put("tokenExpiredTime", System.currentTimeMillis() + StpUtil.getTokenActivityTimeout() * 1000);
+        data.put("roles", StpUtil.getRoleList());
+        data.put("permissions", StpUtil.getPermissionList());
 
-        return null;
+        return HttpResult.success("认证成功", data);
     }
 }

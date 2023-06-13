@@ -11,5 +11,5 @@ import java.util.List;
  */
 @Mapper
 public interface PermissionDao {
-    List<Permission> findActiatedPermissionsByUserId(Long userId);
+    List<Permission> findActivatedPermissionsByUserId(Long userId);
 }

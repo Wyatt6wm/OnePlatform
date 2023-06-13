@@ -20,10 +20,7 @@ public class UserServiceImpl implements UserService {
     public User verifyUserByUsername(String username, String password) {
         try {
             User user = userDao.findByUsername(username);
-            if (user == null) {
-                throw new RuntimeException("用户不存在");
-            }
-            if (!user.getPassword().equals(PasswordUtils.encode(password, user.getSalt()))) {
+            if (user == null || !user.getPassword().equals(PasswordUtils.encode(password, user.getSalt()))) {
                 throw new RuntimeException("用户名或密码错误");
             }
 

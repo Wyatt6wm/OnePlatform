@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User verifyUserByUsername(String username, String password) {
         User user = null;
-        
+
         try {
             user = userDao.findByUsername(username);
         } catch (Exception e) {

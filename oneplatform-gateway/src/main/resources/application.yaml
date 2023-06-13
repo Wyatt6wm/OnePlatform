@@ -8,6 +8,10 @@ spring:
     # 服务网关
     gateway:
       routes:
+        - id: getKaptcha
+          uri: http://${oneplatform.user.host}:${oneplatform.user.port}
+          predicates:
+            - Path=/api/getKaptcha
         - id: login
           uri: http://${oneplatform.user.host}:${oneplatform.user.port}
           predicates:

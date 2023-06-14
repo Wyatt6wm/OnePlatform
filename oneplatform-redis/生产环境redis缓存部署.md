@@ -9,6 +9,6 @@ docker pull redis: 7.0.11
 启动 Redis 缓存容器：
 
 ```shell
-docker run --name oneplatform-redis --restart=unless-stopped -p 9100:6379 -d redis:7.0.11
+docker run --name oneplatform-redis --restart=unless-stopped -p 9100:6379 --net oneplatform-net -d redis:7.0.11
 ```
 

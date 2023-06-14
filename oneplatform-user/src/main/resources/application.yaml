@@ -9,11 +9,18 @@ spring:
     # 服务监控
     admin:
       client:
-        url: "http://localhost:8001"
+        url: http://${sys.op-monitor.domain}
+  cloud:
+    # 服务注册
+    consul:
+      host: ${sys.op-registry.host}
+      port: ${sys.op-registry.port}
+      discovery:
+        serviceName: ${spring.application.name}
   redis:
     database: 0
-    host: ${redis.host}
-    port: ${redis.port}
+    host: ${sys.redis.host}
+    port: ${sys.redis.port}
     timeout: 10s
     lettuce:
       pool:

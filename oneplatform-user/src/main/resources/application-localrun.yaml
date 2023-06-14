@@ -1,22 +1,17 @@
-spring:
-  boot:
-    # 服务监控
-    admin:
-      client:
-        url: "http://oneplatform-monitor:8001"
-  cloud:
-    # 服务注册
-    consul:
-      host: oneplatform-registry
-      port: 8500
-      discovery:
-        serviceName: ${spring.application.name}
 sys:
   mysql:
     domain: wyatt.run:9001
     username: db_access
     password: PZvVdnpwJLS83yu/1A3bcEpCvDNErNWWfSuu0a1AUnps6UaR0o6ozvjYQJltl+uyjYVR0mw0QZFsole3KtaS4Q==
     public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAOPSlUVOw2Wq+mX+KGcyd98jWOnK223S+69leJyfIiRHuxm55fQcvqlFfxc65DRUOsL20OsBH16zjxvHJXJSXzsCAwEAAQ==
-redis:
-  host: wyatt.run
-  port: 9101
+  redis:
+    host: wyatt.run
+    port: 9101
+  op-registry:
+    host: oneplatform-registry
+    port: 8500
+    domain: ${sys.op-registry.host}:${sys.op-registry.port}
+  op-monitor:
+    host: oneplatform-monitor
+    port: 8001
+    domain: ${sys.op-monitor.host}:${sys.op-monitor.port}

@@ -1,22 +1,17 @@
-spring:
-  boot:
-    # 服务监控
-    admin:
-      client:
-        url: "http://oneplatform-monitor:8001"
-  cloud:
-    # 服务注册
-    consul:
-      host: oneplatform-registry
-      port: 8500
-      discovery:
-        serviceName: ${spring.application.name}
 sys:
   mysql:
     domain: oneplatform-mysql:3306
     username: db_access
     password: unknown
     public-key: unknown
-redis:
-  host: oneplatform-redis
-  port: 9100
+  redis:
+    host: oneplatform-redis
+    port: 6379
+  op-registry:
+    host: oneplatform-registry
+    port: 8500
+    domain: ${sys.op-registry.host}:${sys.op-registry.port}
+  op-monitor:
+    host: oneplatform-monitor
+    port: 8001
+    domain: ${sys.op-monitor.host}:${sys.op-monitor.port}

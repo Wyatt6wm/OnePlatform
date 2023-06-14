@@ -39,7 +39,7 @@ public class LoginController {
 
     // 获取验证码
     @GetMapping("/getKaptcha")
-    public void kaptcha(HttpServletRequest request, HttpServletResponse response) {
+    public void getKaptcha(HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-store, no-cache");
         response.setContentType("image/jpeg");
 
@@ -54,6 +54,16 @@ public class LoginController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // 获取验证码
+    @GetMapping("/getKaptchaWithKey")
+    public HttpResult getKaptchaWithKey(@RequestParam("key") String key) {
+        // 生成验证码
+        String text = producer.createText();
+        BufferedImage image = producer.createImage(text);
+
+        return null;
     }
 
     /**

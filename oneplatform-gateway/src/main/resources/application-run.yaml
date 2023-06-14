@@ -1,13 +1,13 @@
-oneplatform:
-  registry:
+sys:
+  op-registry:
     host: oneplatform-registry
     port: 8500
-  gateway:
-    host: oneplatform-gateway
-    port: 8000
-  monitor:
+    domain: ${sys.op-registry.host}:${sys.op-registry.port}
+  op-monitor:
     host: oneplatform-monitor
     port: 8001
-  user:
+    domain: ${sys.op-monitor.host}:${sys.op-monitor.port}
+  op-user:
     host: oneplatform-user
     port: 8002
+    domain: ${sys.op-user.host}:${sys.op-user.port}

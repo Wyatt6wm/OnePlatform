@@ -2,8 +2,8 @@ sys:
   mysql:
     domain: oneplatform-mysql:3306
     username: db_access
-    password: 部署前填写
-    public-key: 部署前填写
+    password: AagGO3Tmeha+1uUC9F8V01RhVnxswgBzlMUBBewzmUAMyBsHNwv8TH+08SsEh0LOdSYqIzyg9BY6jtDS1mTYeg==
+    public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKmtU2G+45wBOy66Zrtvk4g6V/Sf8v95KHNelBRZ4/5+wKvdlwanIYdwbMPMmUoAn4LXW4R+6HeWRetT6nS1XY0CAwEAAQ==
   redis:
     host: oneplatform-redis
     port: 6379

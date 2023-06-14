@@ -1,8 +1,15 @@
+sys:
+  # 系统运行环境：
+  #   1.开发测试环境：dev
+  #   2.本地运行（测试）：local  此环境应用配置与生产一致，不过连接的数据库和缓存是远程服务器开发测试环境的实例
+  #   3.服务器运行（生产）：run
+  env: run
+
 server:
   port: 8002
 spring:
   profiles:
-    active: dev # 开发环境：run，测试环境：dev，本地运行：localrun（连的测试数据库）
+    active: ${sys.env}
   application:
     name: oneplatform-user
   boot:

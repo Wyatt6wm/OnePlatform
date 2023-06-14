@@ -11,12 +11,12 @@ spring:
       port: 8500
       discovery:
         serviceName: ${spring.application.name}
-db:
-  host: wyatt.run
-  port: 9001
-  username: db_access
-  password: PZvVdnpwJLS83yu/1A3bcEpCvDNErNWWfSuu0a1AUnps6UaR0o6ozvjYQJltl+uyjYVR0mw0QZFsole3KtaS4Q==
-  public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAOPSlUVOw2Wq+mX+KGcyd98jWOnK223S+69leJyfIiRHuxm55fQcvqlFfxc65DRUOsL20OsBH16zjxvHJXJSXzsCAwEAAQ==
+sys:
+  mysql:
+    domain: wyatt.run:9001
+    username: db_access
+    password: PZvVdnpwJLS83yu/1A3bcEpCvDNErNWWfSuu0a1AUnps6UaR0o6ozvjYQJltl+uyjYVR0mw0QZFsole3KtaS4Q==
+    public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAOPSlUVOw2Wq+mX+KGcyd98jWOnK223S+69leJyfIiRHuxm55fQcvqlFfxc65DRUOsL20OsBH16zjxvHJXJSXzsCAwEAAQ==
 redis:
   host: wyatt.run
   port: 9101

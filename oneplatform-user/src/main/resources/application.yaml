@@ -10,12 +10,6 @@ spring:
     admin:
       client:
         url: "http://localhost:8001"
-  datasource:
-    host: ${db.host}
-    port: ${db.port}
-    username: ${db.username}
-    password: ${db.password}
-    public-key: ${db.public-key}
   redis:
     database: 0
     host: ${redis.host}

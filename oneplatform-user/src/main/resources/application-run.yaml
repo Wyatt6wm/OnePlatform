@@ -11,12 +11,12 @@ spring:
       port: 8500
       discovery:
         serviceName: ${spring.application.name}
-db:
-  host: oneplatform-mysql
-  port: 9000
-  username: db_access
-  password: unkown
-  public-key: unkown
+sys:
+  mysql:
+    domain: oneplatform-mysql:3306
+    username: db_access
+    password: unknown
+    public-key: unknown
 redis:
   host: oneplatform-redis
   port: 9100

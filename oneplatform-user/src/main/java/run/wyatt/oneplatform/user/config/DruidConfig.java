@@ -22,15 +22,14 @@ import java.util.Properties;
  */
 @Configuration
 public class DruidConfig {
-    @Value("${spring.datasource.host}")
-    private String host;
-    @Value("${spring.datasource.port}")
-    private String port;
-    @Value("${spring.datasource.username}")
+    private static final String url = "jdbc:mysql://{0}/db_oneplatform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8";
+    @Value("${sys.mysql.domain}")
+    private String domain;
+    @Value("${sys.mysql.username}")
     private String username;
-    @Value("${spring.datasource.password}")
+    @Value("${sys.mysql.password}")
     private String password;
-    @Value("${spring.datasource.public-key}")
+    @Value("${sys.mysql.public-key}")
     private String publicKey;
 
     @Bean
@@ -38,8 +37,7 @@ public class DruidConfig {
         DruidDataSource ds = new DruidDataSource();
         // 基础配置
         ds.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        String url = "jdbc:mysql://{0}:{1}/db_oneplatform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8";
-        ds.setUrl(MessageFormat.format(url, host, port));
+        ds.setUrl(MessageFormat.format(url, domain));
         ds.setUsername(username);
         ds.setPassword(password);
         // Druid配置

@@ -2,7 +2,7 @@ spring:
   application:
     name: oneplatform-gateway
   profiles:
-    active: dev
+    active: run
 
   cloud:
     # 服务网关
@@ -16,6 +16,10 @@ spring:
           uri: http://${oneplatform.user.host}:${oneplatform.user.port}
           predicates:
             - Path=/api/login
+        - id: logout
+          uri: http://${oneplatform.user.host}:${oneplatform.user.port}
+          predicates:
+            - Path=/api/logout
 
     # 服务注册
     consul:

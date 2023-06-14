@@ -1,5 +1,7 @@
 package run.wyatt.oneplatform.user.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import com.google.code.kaptcha.Constants;
 import com.google.code.kaptcha.Producer;
@@ -67,10 +69,11 @@ public class LoginController {
             Assert.notNull(loginForm, "请求参数不能为空");
             Assert.hasText(loginForm.getUsername(), "用户名不能为空");
             Assert.hasText(loginForm.getPassword(), "密码不能为空");
-//            Assert.hasText(loginForm.getVerifyCode(), "验证码不能为空");
+            Assert.hasText(loginForm.getVerifyCode(), "验证码不能为空");
         } catch (Exception e) {
             return HttpResult.fail(e.getMessage());
         }
+        // TODO 更完善的格式校验
 
         // 校验验证码
         String verifyCode = loginForm.getVerifyCode().toLowerCase();
@@ -105,5 +108,17 @@ public class LoginController {
         data.put("permissions", StpUtil.getPermissionList());
 
         return HttpResult.success("认证成功", data);
+    }
+
+    // 退出登录
+    @SaCheckLogin
+    @GetMapping("/logout")
+    public HttpResult logout() {
+        try {
+            StpUtil.logout(StpUtil.getLoginId());
+            return HttpResult.success("退出登录成功");
+        } catch (NotLoginException e) {
+            return HttpResult.success("未登录");
+        }
     }
 }

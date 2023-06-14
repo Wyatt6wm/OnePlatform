@@ -1,13 +1,9 @@
-spring:
-  boot:
-    # 服务监控
-    admin:
-      client:
-        url: "http://localhost:8001"
-  cloud:
-    # 服务注册
-    consul:
-      host: localhost
-      port: 8500
-      discovery:
-        serviceName: ${spring.application.name}
+sys:
+  op-registry:
+    host: localhost
+    port: 8500
+    domain: ${sys.op-registry.host}:${sys.op-registry.port}
+  op-monitor:
+    host: localhost
+    port: 8001
+    domain: ${sys.op-monitor.host}:${sys.op-monitor.port}

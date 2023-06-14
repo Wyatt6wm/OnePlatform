@@ -1,12 +1,29 @@
+sys:
+  # 系统运行环境：
+  #   1.开发测试环境：dev
+  #   2.本地运行（测试）：local  此环境应用配置与生产一致，不过连接的数据库和缓存是远程服务器开发测试环境的实例
+  #   3.服务器运行（生产）：run
+  env: run
+
 server:
   port: 8001
-
 spring:
+  profiles:
+    active: ${sys.env}
   application:
     name: oneplatform-monitor
-  profiles:
-    active: run
-
+  boot:
+    # 服务监控
+    admin:
+      client:
+        url: http://${sys.op-monitor.domain}
+  cloud:
+    # 服务注册
+    consul:
+      host: ${sys.op-registry.host}
+      port: ${sys.op-registry.port}
+      discovery:
+        serviceName: ${spring.application.name}
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
 management:
   endpoints:

@@ -3,7 +3,7 @@ package run.wyatt.oneplatform.user.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +12,9 @@ import org.springframework.context.annotation.Configuration;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Properties;
 
 /**
  * @author Wyatt
@@ -19,10 +22,51 @@ import javax.sql.DataSource;
  */
 @Configuration
 public class DruidConfig {
+    @Value("${spring.datasource.host}")
+    private String host;
+    @Value("${spring.datasource.port}")
+    private String port;
+    @Value("${spring.datasource.username}")
+    private String username;
+    @Value("${spring.datasource.password}")
+    private String password;
+    @Value("${spring.datasource.public-key}")
+    private String publicKey;
+
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource druidDataSource() {
-        return new DruidDataSource();
+    public DataSource druidDateSource() {
+        DruidDataSource ds = new DruidDataSource();
+        // 基础配置
+        ds.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        String url = "jdbc:mysql://{0}:{1}/db_oneplatform?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8";
+        ds.setUrl(MessageFormat.format(url, host, port));
+        ds.setUsername(username);
+        ds.setPassword(password);
+        // Druid配置
+        ds.setInitialSize(1);
+        ds.setMaxActive(100);
+        ds.setMinIdle(1);
+        ds.setMaxWait(60000);
+        ds.setTimeBetweenEvictionRunsMillis(60000);
+        ds.setMinEvictableIdleTimeMillis(300000);
+        ds.setValidationQuery("select 'x'");
+        ds.setTestWhileIdle(true);
+        ds.setTestOnBorrow(false);
+        ds.setTestOnReturn(false);
+        ds.setPoolPreparedStatements(true);
+        ds.setMaxOpenPreparedStatements(50);
+        ds.setMaxPoolPreparedStatementPerConnectionSize(20);
+        try {
+            ds.setFilters("config,stat,wall,log4j");
+            Properties connectProperties = new Properties();
+            connectProperties.put("config.decrypt", "true");    // 这里必须使用字符串
+            connectProperties.put("config.decrypt.key", publicKey);
+            ds.setConnectProperties(connectProperties);
+            ds.init();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ds;
     }
 
     @Bean

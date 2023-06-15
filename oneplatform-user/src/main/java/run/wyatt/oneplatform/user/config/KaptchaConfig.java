@@ -39,7 +39,6 @@ public class KaptchaConfig {
         Properties props = new Properties();
         props.put("kaptcha.border", "no");
         props.put("kaptcha.textproducer.char.string", "ACDEFHKPRSTWX345679");
-        props.put("kaptcha.textproducer.char.length", 6);
 
         Config config = new Config(props);
         DefaultKaptcha kaptcha = new DefaultKaptcha();

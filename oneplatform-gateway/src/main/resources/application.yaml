@@ -31,10 +31,6 @@ spring:
           uri: http://${sys.op-user.domain}
           predicates:
             - Path=/api/getKaptcha
-        - id: getKaptchaWithKey
-          uri: http://${sys.op-user.domain}
-          predicates:
-            - Path=/api/getKaptchaWithKey
         - id: login
           uri: http://${sys.op-user.domain}
           predicates:

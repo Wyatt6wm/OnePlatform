@@ -3,25 +3,23 @@ package run.wyatt.oneplatform.user.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
-import com.google.code.kaptcha.Constants;
 import com.google.code.kaptcha.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import run.wyatt.oneplatform.common.http.HttpResult;
+import run.wyatt.oneplatform.common.utils.ImageUtils;
 import run.wyatt.oneplatform.user.model.entity.User;
 import run.wyatt.oneplatform.user.model.form.LoginForm;
 import run.wyatt.oneplatform.user.service.PermissionService;
 import run.wyatt.oneplatform.user.service.UserService;
 
-import javax.imageio.ImageIO;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Wyatt
@@ -30,55 +28,47 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class LoginController {
+    private static final String KAPTCHA_CACHE_PREFIX = "kaptcha:";
+    private static final int KAPTCHA_EXP_SECONDS = 60;  // 过期时间1分钟
+
     @Autowired
     private Producer producer;
     @Autowired
     private UserService userService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     // 获取验证码
     @GetMapping("/getKaptcha")
-    public void getKaptcha(HttpServletRequest request, HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store, no-cache");
-        response.setContentType("image/jpeg");
-
+    public HttpResult getKaptcha() {
+        // 生成key、验证码，并缓存到Redis
         String text = producer.createText();
         BufferedImage image = producer.createImage(text);
-        request.getSession().setAttribute(Constants.KAPTCHA_SESSION_KEY, text); // 保存到session中以供登录时校验
+        String base64Image = ImageUtils.bufferedImageToBase64(image, "jpeg");
+        String key = UUID.randomUUID().toString().replaceAll("-", "");
+        redisTemplate.opsForValue().set(KAPTCHA_CACHE_PREFIX + key, text, Duration.ofSeconds(KAPTCHA_EXP_SECONDS));
 
-        try {
-            ServletOutputStream out = response.getOutputStream();
-            ImageIO.write(image, "jpg", out);
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // 获取验证码
-    @GetMapping("/getKaptchaWithKey")
-    public HttpResult getKaptchaWithKey(@RequestParam("key") String key) {
-        // 生成验证码
-        String text = producer.createText();
-        BufferedImage image = producer.createImage(text);
-
-        return null;
+        Map<String, Object> data = new HashMap<>();
+        data.put("verifyCodeKey", key);
+        data.put("verifyCodeImage", base64Image);
+        return HttpResult.success("生成验证码成功", data);
     }
 
     /**
      * 登录认证
      *
-     * @param request 请求HTTP对象
      * @param loginForm {username 用户名, password 密码, verifyCode验证码}
      * @return 详见接口文档
      */
     @PostMapping("/login")
-    public HttpResult login(HttpServletRequest request, @RequestBody LoginForm loginForm) {
+    public HttpResult login(@RequestBody LoginForm loginForm) {
         try {
             Assert.notNull(loginForm, "请求参数不能为空");
             Assert.hasText(loginForm.getUsername(), "用户名不能为空");
             Assert.hasText(loginForm.getPassword(), "密码不能为空");
+            Assert.hasText(loginForm.getVerifyCodeKey(), "验证码key不能为空");
             Assert.hasText(loginForm.getVerifyCode(), "验证码不能为空");
         } catch (Exception e) {
             return HttpResult.fail(e.getMessage());
@@ -86,8 +76,14 @@ public class LoginController {
         // TODO 更完善的格式校验
 
         // 校验验证码
+        String verifyCodeKey = loginForm.getVerifyCodeKey();
         String verifyCode = loginForm.getVerifyCode().toLowerCase();
-        Object kaptchaText = request.getSession().getAttribute(Constants.KAPTCHA_SESSION_KEY);
+        Object kaptchaText = null;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(KAPTCHA_CACHE_PREFIX + verifyCodeKey))){
+            kaptchaText = redisTemplate.opsForValue().get(KAPTCHA_CACHE_PREFIX + verifyCodeKey);
+            // TODO 解决无法删除数据的问题
+            //redisTemplate.delete(KAPTCHA_CACHE_PREFIX + verifyCodeKey);
+        }
         if (kaptchaText == null) {
             return HttpResult.fail("验证码失效");
         }

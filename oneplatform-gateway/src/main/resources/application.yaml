@@ -28,19 +28,19 @@ spring:
     gateway:
       routes:
         - id: getKaptcha
-          uri: http://${sys.op-user.domain}
+          uri: http://${sys.op-system.domain}
           predicates:
             - Path=/api/getKaptcha
         - id: login
-          uri: http://${sys.op-user.domain}
+          uri: http://${sys.op-system.domain}
           predicates:
             - Path=/api/login
         - id: getProfile
-          uri: http://${sys.op-user.domain}
+          uri: http://${sys.op-system.domain}
           predicates:
             - Path=/api/getProfile
         - id: logout
-          uri: http://${sys.op-user.domain}
+          uri: http://${sys.op-system.domain}
           predicates:
             - Path=/api/logout
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问

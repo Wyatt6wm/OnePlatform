@@ -7,7 +7,7 @@ sys:
     host: oneplatform-monitor
     port: 8001
     domain: ${sys.op-monitor.host}:${sys.op-monitor.port}
-  op-user:
-    host: oneplatform-user
+  op-system:
+    host: oneplatform-system
     port: 8002
-    domain: ${sys.op-user.host}:${sys.op-user.port}
+    domain: ${sys.op-system.host}:${sys.op-system.port}

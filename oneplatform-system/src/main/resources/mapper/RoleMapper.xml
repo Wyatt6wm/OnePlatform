@@ -5,8 +5,8 @@
 <mapper namespace="run.wyatt.oneplatform.system.dao.RoleDao">
     <select id="findActivatedRolesByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Role">
         select distinct r.id, r.identifier, r.name, r.description, r.activated
-        from (select * from tb_user_role where user_id=#{userId}) ur
-        inner join tb_role r on ur.role_id=r.id
+        from (select * from tb_sys_user_role where user_id=#{userId}) ur
+        inner join tb_sys_role r on ur.role_id=r.id
         where r.activated=1
     </select>
 </mapper>

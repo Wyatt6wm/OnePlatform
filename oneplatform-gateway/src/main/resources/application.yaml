@@ -35,6 +35,10 @@ spring:
           uri: http://${sys.op-user.domain}
           predicates:
             - Path=/api/login
+        - id: getProfile
+          uri: http://${sys.op-user.domain}
+          predicates:
+            - Path=/api/getProfile
         - id: logout
           uri: http://${sys.op-user.domain}
           predicates:

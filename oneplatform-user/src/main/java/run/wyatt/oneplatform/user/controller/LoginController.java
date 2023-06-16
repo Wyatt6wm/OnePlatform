@@ -30,6 +30,7 @@ import java.util.UUID;
 public class LoginController {
     private static final String KAPTCHA_CACHE_PREFIX = "kaptcha:";
     private static final int KAPTCHA_EXP_SECONDS = 60;  // 过期时间1分钟
+    private static final String PROFILE_KEY = "profile";
 
     @Autowired
     private Producer producer;
@@ -53,7 +54,8 @@ public class LoginController {
         Map<String, Object> data = new HashMap<>();
         data.put("verifyCodeKey", key);
         data.put("verifyCodeImage", base64Image);
-        return HttpResult.success("生成验证码成功", data);
+
+        return HttpResult.success(data);
     }
 
     /**
@@ -79,7 +81,7 @@ public class LoginController {
         String verifyCodeKey = loginForm.getVerifyCodeKey();
         String verifyCode = loginForm.getVerifyCode().toLowerCase();
         Object kaptchaText = null;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(KAPTCHA_CACHE_PREFIX + verifyCodeKey))){
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(KAPTCHA_CACHE_PREFIX + verifyCodeKey))) {
             kaptchaText = redisTemplate.opsForValue().get(KAPTCHA_CACHE_PREFIX + verifyCodeKey);
             // TODO 解决无法删除数据的问题
             //redisTemplate.delete(KAPTCHA_CACHE_PREFIX + verifyCodeKey);
@@ -95,8 +97,7 @@ public class LoginController {
         User user = null;
         try {
             user = userService.verifyUserByUsername(loginForm.getUsername(), loginForm.getPassword());
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             return HttpResult.fail(e.getMessage());
         }
         user.setPassword(null);
@@ -104,7 +105,7 @@ public class LoginController {
 
         // 登录：Sa-Token框架自动生成token、获取角色和权限，并缓存到Redis
         StpUtil.login(user.getId());
-        // TODO 缓存用户信息
+        StpUtil.getSessionByLoginId(StpUtil.getLoginId()).set(PROFILE_KEY, user);
 
         // 组装响应对象
         Map<String, Object> data = new HashMap<>();
@@ -113,7 +114,13 @@ public class LoginController {
         data.put("roles", StpUtil.getRoleList());
         data.put("permissions", StpUtil.getPermissionList());
 
-        return HttpResult.success("认证成功", data);
+        return HttpResult.success(data);
+    }
+
+    @SaCheckLogin
+    @GetMapping("/getProfile")
+    public HttpResult getProfile() {
+        return HttpResult.success(StpUtil.getSessionByLoginId(StpUtil.getLoginId()).get(PROFILE_KEY));
     }
 
     // 退出登录

@@ -12,4 +12,7 @@ public class User {
     private String username;
     private String password;
     private String salt;
+    private String nickname;
+    private String motto;
+    private String avatar;
 }

@@ -1,52 +1,41 @@
 package run.wyatt.oneplatform.system.service.impl;
 
 import cn.dev33.satoken.stp.StpInterface;
+import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-import run.wyatt.oneplatform.system.dao.PermissionDao;
-import run.wyatt.oneplatform.system.dao.RoleDao;
-import run.wyatt.oneplatform.system.model.entity.Permission;
-import run.wyatt.oneplatform.system.model.entity.Role;
+import run.wyatt.oneplatform.common.cosnt.CacheConst;
+import run.wyatt.oneplatform.system.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Wyatt
- * @date 2023/6/13 11:37
+ * @date 2023/6/16 17:10
  */
 @Component
 public class StpInterfaceImpl implements StpInterface {
     @Autowired
-    private RoleDao roleDao;
-    @Autowired
-    private PermissionDao permissionDao;
+    private UserService userService;
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<String> getPermissionList(Object loginId, String loginType) {
-        List<String> permissionList = new ArrayList<>();
-
-        List<Permission> permissions = permissionDao.findActivatedPermissionsByUserId(Long.valueOf((String) loginId));
-        for (Permission p : permissions) {
-            permissionList.add(p.getIdentifier());
+        // 先查询Redis
+        List<String> permissionList = (ArrayList<String>) StpUtil.getSession().get(CacheConst.PERMISSIONS_KEY);
+        // 如果Redis查询不到则调用远程方法查询数据库
+        if (permissionList == null) {
+            permissionList = userService.getUserPermissionIdentifiers(Long.valueOf(String.valueOf(loginId)));
         }
-
         return permissionList;
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<String> getRoleList(Object loginId, String loginType) {
-        List<String> roleList = new ArrayList<>();
-
-        List<Role> roles = roleDao.findActivatedRolesByUserId(Long.valueOf((String) loginId));
-        for (Role r : roles) {
-            roleList.add(r.getIdentifier());
+        List<String> roleList = (ArrayList<String>) StpUtil.getSession().get(CacheConst.ROLES_KEY);
+        if (roleList == null) {
+            roleList = userService.getUserRoleIdentifiers(Long.valueOf(String.valueOf(loginId)));
         }
-
         return roleList;
     }
 }

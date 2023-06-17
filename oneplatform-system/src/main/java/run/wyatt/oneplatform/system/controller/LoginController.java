@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+import run.wyatt.oneplatform.common.cosnt.CacheConst;
 import run.wyatt.oneplatform.common.http.HttpResult;
 import run.wyatt.oneplatform.common.utils.ImageUtils;
 import run.wyatt.oneplatform.system.model.entity.User;
@@ -18,6 +19,7 @@ import run.wyatt.oneplatform.system.service.UserService;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,12 +28,8 @@ import java.util.UUID;
  * @date 2023/5/27 17:26
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/sys")
 public class LoginController {
-    private static final String KAPTCHA_CACHE_PREFIX = "kaptcha:";
-    private static final int KAPTCHA_EXP_SECONDS = 60;  // 过期时间1分钟
-    private static final String PROFILE_KEY = "profile";
-
     @Autowired
     private Producer producer;
     @Autowired
@@ -49,7 +47,7 @@ public class LoginController {
         BufferedImage image = producer.createImage(text);
         String base64Image = ImageUtils.bufferedImageToBase64(image, "jpeg");
         String key = UUID.randomUUID().toString().replaceAll("-", "");
-        redisTemplate.opsForValue().set(KAPTCHA_CACHE_PREFIX + key, text, Duration.ofSeconds(KAPTCHA_EXP_SECONDS));
+        redisTemplate.opsForValue().set(CacheConst.KAPTCHA_PREFIX + key, text, Duration.ofSeconds(CacheConst.KAPTCHA_EXP_60_SECS));
 
         Map<String, Object> data = new HashMap<>();
         data.put("verifyCodeKey", key);
@@ -81,10 +79,10 @@ public class LoginController {
         String verifyCodeKey = loginForm.getVerifyCodeKey();
         String verifyCode = loginForm.getVerifyCode().toLowerCase();
         Object kaptchaText = null;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(KAPTCHA_CACHE_PREFIX + verifyCodeKey))) {
-            kaptchaText = redisTemplate.opsForValue().get(KAPTCHA_CACHE_PREFIX + verifyCodeKey);
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(CacheConst.KAPTCHA_PREFIX + verifyCodeKey))) {
+            kaptchaText = redisTemplate.opsForValue().get(CacheConst.KAPTCHA_PREFIX + verifyCodeKey);
             // TODO 解决无法删除数据的问题
-            //redisTemplate.delete(KAPTCHA_CACHE_PREFIX + verifyCodeKey);
+            //redisTemplate.delete(CacheConst.KAPTCHA_PREFIX + verifyCodeKey);
         }
         if (kaptchaText == null) {
             return HttpResult.fail("验证码失效");
@@ -105,14 +103,20 @@ public class LoginController {
 
         // 登录：Sa-Token框架自动生成token、获取角色和权限，并缓存到Redis
         StpUtil.login(user.getId());
-        StpUtil.getSessionByLoginId(StpUtil.getLoginId()).set(PROFILE_KEY, user);
+        StpUtil.getSession().set(CacheConst.PROFILE_KEY, user);
+
+        // 获取用户角色和权限并缓存到Redis
+        List<String> roles = userService.getUserRoleIdentifiers(user.getId());
+        List<String> permissions = userService.getUserPermissionIdentifiers(user.getId());
+        StpUtil.getSession().set(CacheConst.ROLES_KEY, roles);
+        StpUtil.getSession().set(CacheConst.PERMISSIONS_KEY, permissions);
 
         // 组装响应对象
         Map<String, Object> data = new HashMap<>();
         data.put("token", StpUtil.getTokenInfo().getTokenValue());
         data.put("tokenExpiredTime", System.currentTimeMillis() + StpUtil.getTokenActivityTimeout() * 1000);
-        data.put("roles", StpUtil.getRoleList());
-        data.put("permissions", StpUtil.getPermissionList());
+        data.put("roles", roles);
+        data.put("permissions", permissions);
 
         return HttpResult.success(data);
     }
@@ -120,7 +124,7 @@ public class LoginController {
     @SaCheckLogin
     @GetMapping("/getProfile")
     public HttpResult getProfile() {
-        return HttpResult.success(StpUtil.getSessionByLoginId(StpUtil.getLoginId()).get(PROFILE_KEY));
+        return HttpResult.success(StpUtil.getSession().get(CacheConst.PROFILE_KEY));
     }
 
     // 退出登录

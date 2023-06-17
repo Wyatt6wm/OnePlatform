@@ -35,6 +35,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- ========== 微服务框架 ========== -->
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -184,7 +184,7 @@ spring:
 
 注意，如果`matchTrailingSlash`设置为false，则`/red/example/`不会命中，因为URL中包含了末尾斜杠。
 
-断言会把URI模板变量（例如`segment`）解析为键值对，使用在`ServerWebExchangeUtils.URI_TEMPLATE_VARIABLES_ATTRIBUTE`定义的键，并存放在`ServerWebExchange。getAttributes()`中。这样这些值就可以被过滤器工厂所使用。
+断言会把URI模板变量（例如`segment`）解析为键值对，使用在`ServerWebExchangeUtils.URI_TEMPLATE_VARIABLES_ATTRIBUTE`定义的键，并存放在`ServerWebExchange.getAttributes()`中。这样这些值就可以被过滤器工厂所使用。
 
 ### 4.9. Query路由断言工厂
 

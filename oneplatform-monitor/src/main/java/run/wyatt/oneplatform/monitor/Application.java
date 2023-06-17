@@ -12,8 +12,8 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableAdminServer
 @EnableDiscoveryClient
 @SpringBootApplication
-public class OneplatformMonitorApplication {
+public class Application {
     public static void main(String[] args) {
-        SpringApplication.run(OneplatformMonitorApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 }

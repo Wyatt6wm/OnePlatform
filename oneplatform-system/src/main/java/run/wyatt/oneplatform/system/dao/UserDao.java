@@ -9,6 +9,6 @@ import run.wyatt.oneplatform.system.model.entity.User;
  */
 @Mapper
 public interface UserDao {
-    long count();
+    Long insert(User record);
     User findByUsername(String username);
 }

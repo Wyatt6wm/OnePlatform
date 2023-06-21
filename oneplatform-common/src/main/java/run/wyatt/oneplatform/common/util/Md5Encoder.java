@@ -1,4 +1,4 @@
-package run.wyatt.oneplatform.common.utils;
+package run.wyatt.oneplatform.common.util;
 
 import java.security.MessageDigest;
 
@@ -6,7 +6,7 @@ import java.security.MessageDigest;
  * @author Wyatt
  * @date 2023/6/12 11:25
  */
-public class MD5Encoder {
+public class Md5Encoder {
     private final static String[] hexDigits = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 
     /**

@@ -14,15 +14,4 @@ import java.util.List;
  */
 @Service
 public class AuthServiceImpl implements AuthService {
-    @Autowired
-    private AuthDao authDao;
-
-    @Override
-    public List<Auth> getPermissionsByUserId(Long userId) {
-        try {
-            return authDao.findActivatedPermissionsByUserId(userId);
-        } catch (Exception e) {
-            throw new RuntimeException("数据库错误");
-        }
-    }
 }

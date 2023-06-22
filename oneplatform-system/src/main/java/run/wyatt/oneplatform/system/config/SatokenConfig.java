@@ -23,7 +23,7 @@ public class SatokenConfig {
         config.setIsConcurrent(true);               // 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
         config.setIsShare(true);                    // 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
         config.setTokenStyle("simple-uuid");        // token风格
-        config.setIsLog(true);                      // 是否输出操作日志
+        config.setIsLog(false);                     // 是否输出操作日志
         config.setIsPrint(false);                   // 是否在初始化配置时打印版本字符画
         config.setIsReadCookie(false);              // 是否尝试从Cookie里读取token，此值为false后，StpUtil.login(id)登录时也不会再往前端注入Cookie
         return config;

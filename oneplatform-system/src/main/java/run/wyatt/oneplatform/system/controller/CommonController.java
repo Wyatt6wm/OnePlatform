@@ -1,6 +1,10 @@
 package run.wyatt.oneplatform.system.controller;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.google.code.kaptcha.Producer;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.common.util.ImageUtil;
+import run.wyatt.oneplatform.common.util.LogUtil;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 
 import java.awt.image.BufferedImage;
@@ -22,6 +27,8 @@ import java.util.UUID;
  * @author Wyatt
  * @date 2023/6/20 22:13
  */
+@Slf4j
+@Api(tags = "公共服务接口")
 @RestController
 @RequestMapping("/api/sys/common")
 public class CommonController {
@@ -35,8 +42,12 @@ public class CommonController {
      *
      * @return {captchaKey 验证码KEY, captchaImage 验证码Base64图像}
      */
+    @ApiOperation("获取验证码")
     @GetMapping("/getCaptcha")
     public R getCaptcha() {
+        LogUtil logUtil = new LogUtil("getCaptcha");
+        log.info(logUtil.apiBeginDivider("获取验证码"));
+
         // 生成验证码KEY、验证码文本，并缓存到Redis
         String captchaKey = UUID.randomUUID().toString().replaceAll("-", "");
         String captchaText = producer.createText();
@@ -44,10 +55,15 @@ public class CommonController {
         // 根据文本生成图片并转成Base64格式
         BufferedImage captchaImage = producer.createImage(captchaText);
         String captchaImageBase64 = ImageUtil.bufferedImageToBase64(captchaImage, "jpeg");
+        log.info("验证码KEY[{}]", captchaKey);
+        log.info("验证码[{}]", captchaText);
 
         Map<String, Object> data = new HashMap<>();
         data.put("captchaKey", captchaKey);
         data.put("captchaImage", captchaImageBase64);
+        log.info(logUtil.apiData(JSONObject.toJSONString(data)));
+
+        log.info(logUtil.apiSuccessDivider());
         return R.success(data);
     }
 }

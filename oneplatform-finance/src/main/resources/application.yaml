@@ -6,31 +6,24 @@ sys:
   env: dev
 
 server:
-  port: 8000
+  port: 8003
 spring:
+  profiles:
+    active: ${sys.env}
+  application:
+    name: oneplatform-finance
+  boot:
+    # 服务监控
+    admin:
+      client:
+        url: http://${sys.op-monitor.domain}
   cloud:
-    # 服务网关
-    gateway:
-      routes:
-        - id: OnePlatformSystem
-          uri: http://${sys.op-system.domain}
-          predicates:
-            - Path=/api/sys/**
     # 服务注册
     consul:
       host: ${sys.op-registry.host}
       port: ${sys.op-registry.port}
       discovery:
         serviceName: ${spring.application.name}
-  profiles:
-    active: ${sys.env}
-  application:
-    name: oneplatform-gateway
-  boot:
-    # 服务监控
-    admin:
-      client:
-        url: http://${sys.op-monitor.domain}
 # 为服务监控中心开放健康检查接口，即对/actuator/*路径的访问
 management:
   endpoints:

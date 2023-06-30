@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="run.wyatt.oneplatform.system.dao.AuthDao">
     <select id="findAuthsByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
-        select distinct A.id, A.identifier, A.name, A.description, A.activated, A.rank
+        select distinct A.id, A.identifier, A.name, A.description, A.activated
         from (select * from tb_sys_user_role where user_id=#{userId}) UR
         inner join tb_sys_role_auth RA on UR.role_id=RA.role_id
         inner join tb_sys_auth A on RA.auth_id=A.id

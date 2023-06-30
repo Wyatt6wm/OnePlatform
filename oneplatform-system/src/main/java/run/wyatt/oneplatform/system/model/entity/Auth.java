@@ -13,5 +13,4 @@ public class Auth {
     private String name;
     private String description;
     private Boolean activated;
-    private Integer rank;
 }

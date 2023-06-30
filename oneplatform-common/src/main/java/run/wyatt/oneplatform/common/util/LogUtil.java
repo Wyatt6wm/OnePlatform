@@ -20,11 +20,11 @@ public class LogUtil {
         return String.format("-------------------- %s --------------------", message);
     }
     public String apiBeginDivider() {
-        return String.format("-------------------- BEGIN api[ %s ] --------------------", methodName);
+        return String.format("BEGIN -------------------- api[ %s ] --------------------", methodName);
     }
 
     public String apiBeginDivider(String function) {
-        return String.format("-------------------- BEGIN api[ %s ] %s --------------------", methodName, function);
+        return String.format("BEGIN -------------------- api[ %s ] %s --------------------", methodName, function);
     }
 
     public String apiSuccessDivider() {
@@ -44,11 +44,11 @@ public class LogUtil {
     }
 
     public String serviceBeginDivider() {
-        return String.format("----- BEGIN service[ %s ] -----", methodName);
+        return String.format("BEGIN ----- service[ %s ] -----", methodName);
     }
 
     public String serviceBeginDivider(String function) {
-        return String.format("----- BEGIN service[ %s ] %s -----", methodName, function);
+        return String.format("BEGIN ----- service[ %s ] %s -----", methodName, function);
     }
 
     public String serviceSuccessDivider() {

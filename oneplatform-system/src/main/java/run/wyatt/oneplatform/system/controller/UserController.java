@@ -240,9 +240,9 @@ public class UserController {
         LogUtil logUtil = new LogUtil("logout");
         log.info(logUtil.apiBeginDivider("退出登录"));
 
-        StpUtil.logout(StpUtil.getLoginId());
+        StpUtil.logout();
 
         log.info(logUtil.apiSuccessDivider());
-        return R.success("退出成功");
+        return R.success();
     }
 }

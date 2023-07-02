@@ -9,4 +9,14 @@
         inner join tb_sys_role_auth RA on UR.role_id=RA.role_id
         inner join tb_sys_auth A on RA.auth_id=A.id
     </select>
+    <update id="update" parameterType="run.wyatt.oneplatform.system.model.entity.Auth">
+        update tb_sys_auth set
+        <trim suffixOverrides="," suffix="">
+            <if test="auth.identifier != null">identifier=#{auth.identifier},</if>
+            <if test="auth.name != null">name=#{auth.name},</if>
+            <if test="auth.description != null">description=#{auth.description},</if>
+            <if test="auth.activated != null">activated=#{auth.activated},</if>
+        </trim>
+        where id=#{auth.id}
+    </update>
 </mapper>

@@ -12,6 +12,7 @@
     <update id="update" parameterType="run.wyatt.oneplatform.system.model.entity.Auth">
         update tb_sys_auth set
         <trim suffixOverrides="," suffix="">
+            id=id,
             <if test="auth.identifier != null">identifier=#{auth.identifier},</if>
             <if test="auth.name != null">name=#{auth.name},</if>
             <if test="auth.description != null">description=#{auth.description},</if>

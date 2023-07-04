@@ -51,12 +51,11 @@ public class AuthServiceImpl implements AuthService {
         log.info(logUtil.serviceBeginDivider("更新指定的权限详细信息"));
         log.info("输入参数: newAuth[{}]", JSONObject.toJSONString(newAuth));
 
+        if (newAuth.getId() == null) {
+            log.info("权限ID错误: id[{}]", newAuth.getId());
+            throw new BusinessException("权限ID错误");
+        }
         try {
-            if (newAuth.getId() == null) {
-                log.info("权限ID错误: id[{}]", newAuth.getId());
-                throw new BusinessException("权限ID错误");
-            }
-
             int affected = authDao.update(newAuth);
             log.info("已执行SQL: affectrd[{}]", affected);
 

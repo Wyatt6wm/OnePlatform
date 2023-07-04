@@ -56,37 +56,46 @@ public class UserServiceImpl implements UserService {
         log.info(logUtil.serviceBeginDivider("创建用户"));
         log.info("输入参数: username[{}] password[*]", username);
 
+        // 判断用户是否已被注册
+        User user = null;
         try {
-            // 判断用户是否已被注册
-            if (userDao.findByUsername(username) != null) {
-                log.info(logUtil.serviceFailDivider("用户已注册"));
-                throw new BusinessException("用户已注册");
-            }
-
-            // 密码加密
-            String salt = PasswordUtil.generateSalt();
-            String encryptedPassword = PasswordUtil.encode(password, salt);
-            log.info("密码加密完成");
-
-            // 保存到数据库
-            User record = new User();
-            record.setUsername(username);
-            record.setPassword(encryptedPassword);
-            record.setSalt(salt);
-            Long userId = userDao.insert(record);
-            log.info("用户成功注册到数据库: userId[{}]", userId);
-
-            // 为用户绑定默认角色
-            if (userId != null) {
-                bindRole(userId, SysConst.DEFAULT_ROLE_ID);
-            }
-
-            log.info(logUtil.serviceSuccessDivider());
-            return userId;
+            user = userDao.findByUsername(username);
         } catch (Exception e) {
             log.info(logUtil.serviceFailDivider(e.getMessage()));
             throw new DatabaseException();
         }
+        if (user != null) {
+            log.info(logUtil.serviceFailDivider("用户已注册"));
+            throw new BusinessException("用户已注册");
+        }
+
+        // 密码加密
+        String salt = PasswordUtil.generateSalt();
+        String encryptedPassword = PasswordUtil.encode(password, salt);
+        log.info("密码加密完成");
+
+        // 保存到数据库
+        User record = new User();
+        record.setUsername(username);
+        record.setPassword(encryptedPassword);
+        record.setSalt(salt);
+        Long userId = null;
+        try {
+            userId = userDao.insert(record);
+        } catch (Exception e) {
+            log.info(logUtil.serviceFailDivider(e.getMessage()));
+            throw new DatabaseException();
+        }
+        log.info("用户成功注册到数据库: userId[{}]", userId);
+
+        // 为用户绑定默认角色
+        if (userId != null) {
+            bindRole(userId, SysConst.DEFAULT_ROLE_ID);
+        }
+
+        log.info(logUtil.serviceSuccessDivider());
+        return userId;
+
     }
 
     @Override
@@ -111,19 +120,24 @@ public class UserServiceImpl implements UserService {
         LogUtil logUtil = new LogUtil("verifyByUsername");
         log.info(logUtil.serviceBeginDivider("根据用户名认证"));
 
+        // 查询数据库
+        User user = null;
         try {
-            User user = userDao.findByUsername(username);
-            if (user == null || !user.getPassword().equals(PasswordUtil.encode(password, user.getSalt()))) {
-                log.info(logUtil.serviceFailDivider("用户名或密码错误"));
-                throw new BusinessException("用户名或密码错误");
-            }
-
-            log.info(logUtil.serviceSuccessDivider());
-            return user;
+            user = userDao.findByUsername(username);
         } catch (Exception e) {
             log.info(logUtil.serviceFailDivider(e.getMessage()));
             throw new DatabaseException();
         }
+
+        // 判断用户名和密码是否正确
+        if (user == null || !user.getPassword().equals(PasswordUtil.encode(password, user.getSalt()))) {
+            log.info(logUtil.serviceFailDivider("用户名或密码错误"));
+            throw new BusinessException("用户名或密码错误");
+        }
+        log.info("用户名和密码通过验证");
+
+        log.info(logUtil.serviceSuccessDivider());
+        return user;
     }
 
     @Override

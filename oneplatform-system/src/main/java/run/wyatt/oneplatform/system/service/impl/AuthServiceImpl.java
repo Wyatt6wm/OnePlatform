@@ -28,6 +28,27 @@ public class AuthServiceImpl implements AuthService {
     private AuthDao authDao;
 
     @Override
+    public Long createAuth(Auth auth) {
+        LogUtil logUtil = new LogUtil("createAuth");
+        log.info(logUtil.serviceBeginDivider("创建新权限"));
+        log.info("输入参数: auth[{}]", JSONObject.toJSONString(auth));
+
+        try {
+            Long authId = authDao.insert(auth);
+            log.info("authId[{}]", authId);
+            log.info(logUtil.serviceSuccessDivider());
+            return authId;
+        } catch (DuplicateKeyException e) {
+            log.info("权限标识符重复");
+            log.info(logUtil.serviceFailDivider(e.getMessage()));
+            throw new BusinessException("权限标识符重复");
+        } catch (Exception e) {
+            log.info(logUtil.serviceFailDivider(e.getMessage()));
+            throw new DatabaseException();
+        }
+    }
+
+    @Override
     public List<Auth> listAuthDetails(Long userId) {
         LogUtil logUtil = new LogUtil("listAuthDetails");
         log.info(logUtil.serviceBeginDivider("获取用户所有权限的详细信息"));

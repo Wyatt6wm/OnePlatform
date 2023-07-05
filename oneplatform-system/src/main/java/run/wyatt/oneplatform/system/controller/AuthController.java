@@ -2,6 +2,8 @@ package run.wyatt.oneplatform.system.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
 import com.alibaba.fastjson2.JSONObject;
 import io.swagger.annotations.Api;
@@ -41,13 +43,8 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    /**
-     * 获取用户权限列表
-     *
-     * @return 详见接口文档
-     */
-    @SaCheckLogin
     @ApiOperation("获取用户权限列表")
+    @SaCheckLogin
     @GetMapping("/getAuths")
     public R getAuths() {
         LogUtil logUtil = new LogUtil("getAuths");
@@ -76,14 +73,9 @@ public class AuthController {
         return R.success(data);
     }
 
-    /**
-     * 获取用户的权限详细列表
-     *
-     * @return 详见接口文档
-     */
-    @SaCheckLogin
-    @SaCheckPermission("api:sys:auth:list")
     @ApiOperation("获取用户权限详细列表")
+    @SaCheckLogin
+    @SaCheckRole(value = {"super_admin", "admin"}, mode = SaMode.OR)
     @GetMapping("/getAuthDetails")
     public R getAuthDetails() {
         LogUtil logUtil = new LogUtil("getAuthDetails");
@@ -104,14 +96,9 @@ public class AuthController {
         }
     }
 
-    /**
-     * 编辑权限
-     *
-     * @return 详见接口文档
-     */
-    @SaCheckLogin
-    @SaCheckPermission("api:sys:auth:edit")
     @ApiOperation("编辑权限")
+    @SaCheckLogin
+    @SaCheckRole("super_admin")
     @PostMapping("/editAuth")
     public R editAuth(@RequestBody AuthForm authForm) {
         LogUtil logUtil = new LogUtil("editAuth");
@@ -138,15 +125,48 @@ public class AuthController {
         log.info("activated[{}]", newAuth.getActivated());
 
         try {
-            if (authService.updateAuthDetail(newAuth)) {
-                log.info(logUtil.apiSuccessDivider());
-                return R.success();
-            }
+            authService.updateAuthDetail(newAuth);
+            log.info(logUtil.apiSuccessDivider());
+            return R.success();
         } catch (Exception e) {
             log.info(logUtil.apiFailDivider(e.getMessage()));
             return R.fail(e.getMessage());
         }
+    }
 
-        return null;
+    @ApiOperation("新增权限")
+    @SaCheckLogin
+    @SaCheckRole("super_admin")
+    @PostMapping("/addAuth")
+    public R addAuth(@RequestBody AuthForm authForm) {
+        try {
+            Assert.notNull(authForm, "请求参数为null");
+            Assert.hasText(authForm.getIdentifier(), "权限标识符为空");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail("请求参数错误");
+        }
+
+        try {
+            Auth auth = new Auth();
+            auth.setIdentifier(authForm.getIdentifier());
+            if (authForm.getName() != null && !authForm.getName().isEmpty()) {
+                auth.setName(authForm.getName());
+            }
+            if (authForm.getDescription() != null && !authForm.getDescription().isEmpty()) {
+                auth.setDescription(authForm.getDescription());
+            }
+            if (authForm.getActivated() != null) {
+                auth.setActivated(authForm.getActivated());
+            }
+
+            Long authId = authService.createAuth(auth);
+
+//            log.info(logUtil.apiSuccessDivider());
+            return R.success();
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail(e.getMessage());
+        }
     }
 }

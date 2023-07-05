@@ -46,7 +46,6 @@ public class CommonController {
     @GetMapping("/getCaptcha")
     public R getCaptcha() {
         LogUtil logUtil = new LogUtil("getCaptcha");
-        log.info(logUtil.apiBeginDivider("获取验证码"));
 
         // 生成验证码KEY、验证码文本，并缓存到Redis
         String captchaKey = UUID.randomUUID().toString().replaceAll("-", "");
@@ -61,9 +60,7 @@ public class CommonController {
         Map<String, Object> data = new HashMap<>();
         data.put("captchaKey", captchaKey);
         data.put("captchaImage", captchaImageBase64);
-        log.info(logUtil.apiData(JSONObject.toJSONString(data)));
 
-        log.info(logUtil.apiSuccessDivider());
         return R.success(data);
     }
 }

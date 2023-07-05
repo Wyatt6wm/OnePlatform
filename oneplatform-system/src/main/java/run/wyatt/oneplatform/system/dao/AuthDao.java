@@ -1,7 +1,6 @@
 package run.wyatt.oneplatform.system.dao;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 
 import java.util.List;
@@ -12,6 +11,8 @@ import java.util.List;
  */
 @Mapper
 public interface AuthDao {
+
+    Long insert(Auth record);
     List<Auth> findAuthsByUserId(Long userId);
-    int update(@Param("auth") Auth auth);
+    int update(Auth auth);
 }

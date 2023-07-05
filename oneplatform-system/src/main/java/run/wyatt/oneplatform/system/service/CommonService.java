@@ -22,5 +22,5 @@ public interface CommonService {
      * @param captchaInput 输入的验证码
      * @return true / false
      */
-    boolean chechCaptchaFormat(String captchaInput);
+    boolean checkCaptchaFormat(String captchaInput);
 }

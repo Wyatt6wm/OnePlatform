@@ -44,7 +44,7 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
-    public boolean chechCaptchaFormat(String captchaInput) {
+    public boolean checkCaptchaFormat(String captchaInput) {
         return captchaInput.matches(CAPTCHA_REGEXP);
     }
 }

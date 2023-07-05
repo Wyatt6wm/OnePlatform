@@ -3,6 +3,24 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="run.wyatt.oneplatform.system.dao.AuthDao">
+    <insert id="insert" parameterType="run.wyatt.oneplatform.system.model.entity.Auth" useGeneratedKeys="true"
+            keyColumn="id" keyProperty="id">
+        insert into tb_sys_auth(
+        <trim suffixOverrides="," suffix="">
+            <if test="record.identifier != null">identifier,</if>
+            <if test="record.name != null">name,</if>
+            <if test="record.description != null">description,</if>
+            <if test="record.activated != null">activated,</if>
+        </trim>
+        ) values (
+        <trim suffixOverrides="," suffix="">
+            <if test="record.identifier != null">#{record.identifier},</if>
+            <if test="record.name != null">#{record.name},</if>
+            <if test="record.description != null">#{record.description},</if>
+            <if test="record.activated != null">#{record.activated},</if>
+        </trim>
+        )
+    </insert>
     <select id="findAuthsByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
         select distinct A.id, A.identifier, A.name, A.description, A.activated
         from (select * from tb_sys_user_role where user_id=#{userId}) UR

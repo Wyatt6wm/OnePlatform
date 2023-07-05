@@ -89,6 +89,11 @@
         </dependency>
 
         <!-- ========== 微服务框架 ========== -->
+        <!-- Spring Boot AOP面向切面编程 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <!-- Spring Boot Actuator服务注册和服务监控都用到 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

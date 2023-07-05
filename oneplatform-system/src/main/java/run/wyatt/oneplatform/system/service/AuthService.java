@@ -24,4 +24,12 @@ public interface AuthService {
      * @return true 更新成功
      */
     boolean updateAuthDetail(Auth newAuth);
+
+    /**
+     * 创建新权限
+     *
+     * @param auth 输入的权限信息
+     * @return 新权限的ID
+     */
+    Long createAuth(Auth auth);
 }

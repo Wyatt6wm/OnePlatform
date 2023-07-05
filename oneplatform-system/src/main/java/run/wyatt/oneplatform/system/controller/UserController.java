@@ -80,7 +80,7 @@ public class UserController {
             log.info(logUtil.apiFailDivider("密码格式错误"));
             return R.fail("密码格式错误");
         }
-        if (!commonService.chechCaptchaFormat(captchaInput)) {
+        if (!commonService.checkCaptchaFormat(captchaInput)) {
             log.info(logUtil.apiFailDivider("验证码格式错误"));
             return R.fail("验证码格式错误");
         }
@@ -148,7 +148,7 @@ public class UserController {
             log.info(logUtil.apiFailDivider("密码格式错误"));
             return R.fail("密码格式错误");
         }
-        if (!commonService.chechCaptchaFormat(captchaInput)) {
+        if (!commonService.checkCaptchaFormat(captchaInput)) {
             log.info(logUtil.apiFailDivider("验证码格式错误"));
             return R.fail("验证码格式错误");
         }

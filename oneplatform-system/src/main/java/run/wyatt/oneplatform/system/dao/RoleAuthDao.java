@@ -9,7 +9,10 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface RoleAuthDao {
     long insert(Long roleId, Long authId);
+
     long delete(Long roleId, Long authId);
+
     long deleteByRoleId(Long roleId);
+
     long deleteByAuthId(Long authId);
 }

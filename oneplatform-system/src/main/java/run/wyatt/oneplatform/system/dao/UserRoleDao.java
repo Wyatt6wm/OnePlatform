@@ -6,7 +6,10 @@ package run.wyatt.oneplatform.system.dao;
  */
 public interface UserRoleDao {
     long insert(Long userId, Long roleId);
+
     long delete(Long userId, Long roleId);
+
     long deleteByUserId(Long userId);
+
     long deleteByRoleId(Long roleId);
 }

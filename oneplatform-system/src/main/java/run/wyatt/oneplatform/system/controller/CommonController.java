@@ -1,6 +1,5 @@
 package run.wyatt.oneplatform.system.controller;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.google.code.kaptcha.Producer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.common.util.ImageUtil;
-import run.wyatt.oneplatform.common.util.LogUtil;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 
 import java.awt.image.BufferedImage;
@@ -45,8 +43,6 @@ public class CommonController {
     @ApiOperation("获取验证码")
     @GetMapping("/getCaptcha")
     public R getCaptcha() {
-        LogUtil logUtil = new LogUtil("getCaptcha");
-
         // 生成验证码KEY、验证码文本，并缓存到Redis
         String captchaKey = UUID.randomUUID().toString().replaceAll("-", "");
         String captchaText = producer.createText();

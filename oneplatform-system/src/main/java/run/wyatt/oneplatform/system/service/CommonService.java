@@ -17,10 +17,10 @@ public interface CommonService {
     boolean checkCaptcha(String captchaKey, String captchaInput);
 
     /**
-     * 检查输入的验证码格式是否正确
+     * 检查输入的验证码格式是否不正确
      *
      * @param captchaInput 输入的验证码
-     * @return true / false
+     * @return true 格式不正确 / false 格式正确
      */
-    boolean checkCaptchaFormat(String captchaInput);
+    boolean invalidCaptchaFormat(String captchaInput);
 }

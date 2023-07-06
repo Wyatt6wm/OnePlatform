@@ -10,20 +10,20 @@ import java.util.List;
  */
 public interface UserService {
     /**
-     * 检查用户名输入格式是否正确
+     * 检查用户名输入格式是否不正确
      *
      * @param username 输入的用户名
-     * @return true / false
+     * @return true 格式不正确 / false 格式正确
      */
-    boolean checkUsernameFormat(String username);
+    boolean invalidUsernameFormat(String username);
 
     /**
-     * 检查密码输入格式是否正确
+     * 检查密码输入格式是否不正确
      *
      * @param password 输入的密码
-     * @return true / false
+     * @return true 格式不正确 / false 格式正确
      */
-    boolean checkPasswordFormat(String password);
+    boolean invalidPasswordFormat(String password);
 
     /**
      * 创建用户

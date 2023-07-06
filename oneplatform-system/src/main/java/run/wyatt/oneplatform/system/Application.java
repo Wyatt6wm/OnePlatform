@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import run.wyatt.oneplatform.common.util.LogUtil;
 
 /**
  * @author Wyatt
@@ -16,6 +15,6 @@ import run.wyatt.oneplatform.common.util.LogUtil;
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-        log.info(LogUtil.divider("Oneplatform System 已启动"));
+        log.info("--------------- Oneplatform System 已启动 ---------------");
     }
 }

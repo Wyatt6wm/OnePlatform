@@ -30,30 +30,6 @@ public class RoleController {
     @Autowired
     private UserService userService;
 
-    @SaCheckLogin
-    @ApiOperation("获取用户角色列表")
-    @GetMapping("/getRoles")
-    public R getRoles() {
-        // 先查询Redis
-        List<String> roles = (ArrayList<String>) StpUtil.getSession().get(CommonConst.REDIS_ROLES_KEY);
-        // 如果Redis查询不到则调用远程方法查询数据库
-        if (roles == null) {
-            log.info("Session缓存无用户角色数据，查询数据库");
-            Long userId = StpUtil.getLoginIdAsLong();
-            try {
-                roles = userService.listActivatedRoleIdentifiers(userId);
-            } catch (Exception e) {
-                return R.fail(e.getMessage());
-            }
-        }
-        log.info("成功获取用户角色列表");
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("roles", roles);
-
-        return R.success(data);
-    }
-
     public R createRole() {
         return null;
     }

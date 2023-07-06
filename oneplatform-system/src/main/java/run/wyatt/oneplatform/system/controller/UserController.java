@@ -2,15 +2,14 @@ package run.wyatt.oneplatform.system.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
-import com.alibaba.fastjson2.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
+import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
@@ -18,6 +17,7 @@ import run.wyatt.oneplatform.system.model.form.RegistryForm;
 import run.wyatt.oneplatform.system.service.CommonService;
 import run.wyatt.oneplatform.system.service.UserService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,18 +32,10 @@ import java.util.Map;
 @RequestMapping("/api/sys/user")
 public class UserController {
     @Autowired
-    private RedisTemplate<String, Object> reids;
-    @Autowired
     private CommonService commonService;
     @Autowired
     private UserService userService;
 
-    /**
-     * 注册用户
-     *
-     * @param registryForm {username 用户名, password 密码, captchaKey 验证码KEY, captchaInput 验证码}
-     * @return 详见接口文档
-     */
     @ApiOperation("注册用户")
     @PostMapping("/registry")
     public R registry(@RequestBody RegistryForm registryForm) {
@@ -95,12 +87,6 @@ public class UserController {
         }
     }
 
-    /**
-     * 登录认证
-     *
-     * @param loginForm {username 用户名, password 密码, captchaKey 验证码KEY, captchaInput 验证码}
-     * @return 详见接口文档
-     */
     @ApiOperation("登录认证")
     @PostMapping("/login")
     public R login(@RequestBody LoginForm loginForm) {
@@ -163,8 +149,8 @@ public class UserController {
         List<String> roles = null;
         List<String> auths = null;
         try {
-            roles = userService.listActivatedRoleIdentifiers(user.getId());
-            auths = userService.listActivatedAuthIdentifiers(user.getId());
+            roles = userService.getRoleIdentifiersOfUser(user.getId());
+            auths = userService.getAuthIdentifiersOfUser(user.getId());
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }
@@ -182,34 +168,53 @@ public class UserController {
         return R.success(data);
     }
 
-    /**
-     * 获取用户详细信息。从Sa-Token框架会话中获取。
-     *
-     * @return 详见接口文档
-     */
-
-    @ApiOperation("获取用户详细信息")
-    @SaCheckLogin
-    @GetMapping("/getProfile")
-    public R getProfile() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("profile", StpUtil.getSession().get(CommonConst.REDIS_PROFILE_KEY));
-
-        return R.success(data);
-    }
-
-    /**
-     * 退出登录
-     *
-     * @return 详见接口文档
-     */
-
     @ApiOperation("退出登录")
     @SaCheckLogin
     @GetMapping("/logout")
     public R logout() {
         StpUtil.logout();
-
         return R.success();
+    }
+
+    @ApiOperation("查询用户角色标识")
+    @SaCheckLogin
+    @GetMapping("/getRolesOfUser")
+    public R getRolesOfUser() {
+        try {
+            Long userId = StpUtil.getLoginIdAsLong();
+            List<String> roles = userService.getRoleIdentifiersOfUser(userId);
+
+            Data data = new Data();
+            data.put("roles", roles);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("查询用户权限标识")
+    @SaCheckLogin
+    @GetMapping("/getAuthsOfUser")
+    public R getAuthsOfUser() {
+        try {
+            Long userId = StpUtil.getLoginIdAsLong();
+            List<String> auths = userService.getAuthIdentifiersOfUser(userId);
+
+            Data data = new Data();
+            data.put("auths", auths);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取用户详细信息")
+    @SaCheckLogin
+    @GetMapping("/getProfile")
+    public R getProfile() {
+        Data data = new Data();
+        data.put("profile", StpUtil.getSession().get(CommonConst.REDIS_PROFILE_KEY));
+        log.info("获取用户详细信息成功");
+        return R.success(data);
     }
 }

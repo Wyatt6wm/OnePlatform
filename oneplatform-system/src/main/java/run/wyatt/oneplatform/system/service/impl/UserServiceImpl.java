@@ -1,8 +1,11 @@
 package run.wyatt.oneplatform.system.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import run.wyatt.oneplatform.common.cosnt.CommonConst;
 import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.exception.DatabaseException;
 import run.wyatt.oneplatform.common.util.PasswordUtil;
@@ -28,7 +31,8 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private static final String USERNAME_REGEXP = "^[A-Za-z0-9]{1,16}$";
     private static final String PASSWORD_REGEXP = "^[A-Za-z0-9.~!@#$%^&*_?]{6,16}$";
-
+    @Autowired
+    private RedisTemplate<String, Object> redis;
     @Autowired
     private UserDao userDao;
     @Autowired
@@ -97,7 +101,7 @@ public class UserServiceImpl implements UserService {
         log.info("输入参数: userId={}, roleId={}", userId, roleId);
 
         try {
-            int affected = userRoleDao.insert(userId, roleId);
+            long affected = userRoleDao.insert(userId, roleId);
             log.info("成功为用户绑定角色");
             return affected == 1;
         } catch (Exception e) {
@@ -129,38 +133,64 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<String> listActivatedRoleIdentifiers(Long userId) {
-        try {
-            List<Role> roles = roleDao.findRolesByUserId(userId);
-            List<String> activatedRoleIdentifiers = new ArrayList<>();
-            for (Role role : roles) {
-                if (role.getActivated()) {
-                    activatedRoleIdentifiers.add(role.getIdentifier());
-                }
-            }
-            log.info("角色标识符列表: {}", activatedRoleIdentifiers);
-            return activatedRoleIdentifiers;
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
+    public List<String> getRoleIdentifiersOfUser(Long userId) {
+        log.info("输入参数: userId={}", userId);
+
+        List<String> roles = null;
+        Integer roleChanged = (Integer) redis.opsForValue().get(SysConst.ROLE_CHANGED);
+        if (roleChanged == null || roleChanged == 0) {
+            log.info("数据库角色表未发生变更，先查询Redis的Session缓存");
+            roles = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_ROLES_KEY);
         }
+
+        if (roles == null) {
+            log.info("数据库角色表曾经发生变更，或Redis的Session缓存无角色数据，查询数据库");
+            try {
+                List<Role> roleList = roleDao.findByUserId(userId);
+                roles = new ArrayList<>();
+                for (Role item : roleList) {
+                    if (item.getActivated()) {
+                        roles.add(item.getIdentifier());
+                    }
+                }
+                log.info("完成标识符字符串列表提取");
+            } catch (Exception e) {
+                log.info(e.getMessage());
+                throw new DatabaseException();
+            }
+        }
+        log.info("用户的角色标识列表: {}", roles);
+        return roles;
     }
 
     @Override
-    public List<String> listActivatedAuthIdentifiers(Long userId) {
-        try {
-            List<Auth> auths = authDao.findAuthsByUserId(userId);
-            List<String> activatedAuthIdentifiers = new ArrayList<>();
-            for (Auth auth : auths) {
-                if (auth.getActivated()) {
-                    activatedAuthIdentifiers.add(auth.getIdentifier());
-                }
-            }
-            log.info("权限标识符列表: {}", activatedAuthIdentifiers);
-            return activatedAuthIdentifiers;
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
+    public List<String> getAuthIdentifiersOfUser(Long userId) {
+        log.info("输入参数: userId={}", userId);
+
+        List<String> auths = null;
+        Integer authChanged = (Integer) redis.opsForValue().get(SysConst.AUTH_CHANGED);
+        if (authChanged == null || authChanged == 0) {
+            log.info("数据库权限表未发生变更，先查询Redis的Session缓存");
+            auths = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_ROLES_KEY);
         }
+
+        if (auths == null) {
+            log.info("数据库权限表曾经发生变更，或Redis的Session缓存无权限数据，查询数据库");
+            try {
+                List<Auth> authList = authDao.findByUserId(userId);
+                auths = new ArrayList<>();
+                for (Auth item : authList) {
+                    if (item.getActivated()) {
+                        auths.add(item.getIdentifier());
+                    }
+                }
+                log.info("完成标识符字符串列表提取");
+            } catch (Exception e) {
+                log.info(e.getMessage());
+                throw new DatabaseException();
+            }
+        }
+        log.info("用户的权限标识列表: {}", auths);
+        return auths;
     }
 }

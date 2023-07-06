@@ -21,7 +21,12 @@ public class CommonServiceImpl implements CommonService {
     private RedisTemplate<String, Object> redis;
 
     @Override
-    public boolean checkCaptcha(String captchaKey, String captchaInput) {
+    public boolean invalidCaptchaFormat(String captchaInput) {
+        return !captchaInput.matches(CAPTCHA_REGEXP);
+    }
+
+    @Override
+    public void checkCaptcha(String captchaKey, String captchaInput) {
         log.info("输入参数: captchaKey={}, captchaInput={}", captchaKey, captchaInput);
 
         Object captchaText = redis.opsForValue().get(SysConst.CAPTCHA_REDIS_KEY_PREFIX + captchaKey);
@@ -31,15 +36,9 @@ public class CommonServiceImpl implements CommonService {
             log.info("缓存验证码: captchaText={}", captchaText);
             if (captchaInput.equalsIgnoreCase(String.valueOf(captchaText))) {
                 log.info("通过验证");
-                return true;
             } else {
                 throw new BusinessException("验证码错误");
             }
         }
-    }
-
-    @Override
-    public boolean invalidCaptchaFormat(String captchaInput) {
-        return !captchaInput.matches(CAPTCHA_REGEXP);
     }
 }

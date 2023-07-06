@@ -10,26 +10,33 @@ import java.util.List;
  */
 public interface AuthService {
     /**
-     * 根据用户ID获取该用户所有权限的详细信息
-     *
-     * @param userId 用户ID
-     * @return 权限详细信息列表
-     */
-    List<Auth> listAuthDetails(Long userId);
-
-    /**
-     * 更新指定权限ID的权限详细信息
-     *
-     * @param newAuth 新的权限详细信息，其中id必填
-     * @return true 更新成功
-     */
-    boolean updateAuthDetail(Auth newAuth);
-
-    /**
      * 创建新权限
      *
      * @param auth 输入的权限信息
-     * @return 新权限的ID
+     * @return 新权限对象
      */
-    Long createAuth(Auth auth);
+    Auth createAuth(Auth auth);
+
+    /**
+     * 删除权限记录
+     *
+     * @param authId 要删除的权限ID
+     */
+    void removeAuth(Long authId);
+
+    /**
+     * 查询所有权限
+     *
+     * @return 权限列表
+     */
+    List<Auth> listAllAuth();
+
+    /**
+     * 根据权限ID更新权限记录
+     *
+     * @param id   要更新的权限ID
+     * @param auth 新的权限数据
+     * @return 更新后的权限对象
+     */
+    Auth updateAuth(Long id, Auth auth);
 }

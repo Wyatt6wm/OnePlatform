@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
+import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
+import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.form.AuthForm;
 import run.wyatt.oneplatform.system.service.AuthService;
@@ -36,83 +38,12 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @ApiOperation("获取用户权限列表")
-    @SaCheckLogin
-    @GetMapping("/getAuths")
-    public R getAuths() {
-        // 先查询Redis
-        List<String> auths = (ArrayList<String>) StpUtil.getSession().get(CommonConst.REDIS_AUTHS_KEY);
-        // 如果Redis查询不到则调用远程方法查询数据库
-        if (auths == null) {
-            log.info("Session缓存无用户权限数据，查询数据库");
-            Long userId = StpUtil.getLoginIdAsLong();
-            try {
-                auths = userService.listActivatedAuthIdentifiers(userId);
-            } catch (Exception e) {
-                return R.fail(e.getMessage());
-            }
-        }
-        log.info("成功获取用户权限列表");
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("auths", auths);
-
-        return R.success(data);
-    }
-
-    @ApiOperation("获取用户权限详细列表")
-    @SaCheckLogin
-    @SaCheckRole(value = {"super_admin", "admin"}, mode = SaMode.OR)
-    @GetMapping("/getAuthDetails")
-    public R getAuthDetails() {
-
-        try {
-            List<Auth> authDetails = authService.listAuthDetails(StpUtil.getLoginIdAsLong());
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("authDetails", authDetails);
-
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
-    }
-
-    @ApiOperation("编辑权限")
-    @SaCheckLogin
-    @SaCheckRole("super_admin")
-    @PostMapping("/editAuth")
-    public R editAuth(@RequestBody AuthForm authForm) {
-        log.info("输入参数: authForm={}", authForm);
-        try {
-            Assert.notNull(authForm, "请求参数为null");
-            Assert.notNull(authForm.getId(), "权限ID为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            return R.fail("请求参数错误");
-        }
-
-        Auth newAuth = new Auth();
-        newAuth.setId(authForm.getId());
-        newAuth.setIdentifier(authForm.getIdentifier());
-        newAuth.setName(authForm.getName());
-        newAuth.setDescription(authForm.getDescription());
-        newAuth.setActivated(authForm.getActivated());
-
-        try {
-            authService.updateAuthDetail(newAuth);
-            return R.success();
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
-    }
-
     @ApiOperation("新增权限")
     @SaCheckLogin
-    @SaCheckRole("super_admin")
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @PostMapping("/addAuth")
     public R addAuth(@RequestBody AuthForm authForm) {
-        log.info("输入参数: authForm={}", authForm);
+        log.info("请求参数: authForm={}", authForm);
         try {
             Assert.notNull(authForm, "请求参数为null");
             Assert.hasText(authForm.getIdentifier(), "权限标识符为空");
@@ -121,22 +52,103 @@ public class AuthController {
             return R.fail("请求参数错误");
         }
 
+        String identifier = authForm.getIdentifier();
+        String name = authForm.getName();
+        String description = authForm.getDescription();
+        Boolean activated = authForm.getActivated();
+
         try {
             Auth auth = new Auth();
-            auth.setIdentifier(authForm.getIdentifier());
-            if (authForm.getName() != null && !authForm.getName().isEmpty()) {
-                auth.setName(authForm.getName());
-            }
-            if (authForm.getDescription() != null && !authForm.getDescription().isEmpty()) {
-                auth.setDescription(authForm.getDescription());
-            }
-            if (authForm.getActivated() != null) {
-                auth.setActivated(authForm.getActivated());
-            }
+            auth.setIdentifier(identifier.trim());
+            auth.setName((name != null) ? name.trim() : null);
+            auth.setDescription((description != null) ? description.trim() : null);
+            auth.setActivated(activated);
+            log.info("组装后的新权限记录: {}", auth);
 
-            Long authId = authService.createAuth(auth);
+            log.info("新增权限");
+            Auth result = authService.createAuth(auth);
 
+            Data data = new Data();
+            data.put("auth", result);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("删除权限")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @GetMapping("/removeAuth")
+    public R removeAuth(@RequestParam("id") Long authId) {
+        log.info("请求参数: id={}", authId);
+        try {
+            Assert.notNull(authId, "权限ID为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail("请求参数错误");
+        }
+
+        try {
+            log.info("删除权限");
+            authService.removeAuth(authId);
             return R.success();
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("编辑权限")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @PostMapping("/editAuth")
+    public R editAuth(@RequestBody AuthForm authForm) {
+        log.info("请求参数: authForm={}", authForm);
+        try {
+            Assert.notNull(authForm, "请求参数为null");
+            Assert.notNull(authForm.getId(), "权限ID为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail("请求参数错误");
+        }
+
+        Long id = authForm.getId();
+        String identifier = authForm.getIdentifier();
+        String name = authForm.getName();
+        String description = authForm.getDescription();
+        Boolean activated = authForm.getActivated();
+
+        try {
+            Auth auth = new Auth();
+            auth.setIdentifier((identifier != null) ? identifier.trim() : null);
+            auth.setName((name != null) ? name.trim() : null);
+            auth.setDescription((description != null) ? description.trim() : null);
+            auth.setActivated(activated);
+            log.info("组装后的新权限记录: {}", auth);
+
+            log.info("更新权限");
+            Auth result = authService.updateAuth(id, auth);
+
+            Data data = new Data();
+            data.put("auth", result);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取权限列表")
+    @SaCheckLogin
+    @SaCheckRole(value = {SysConst.SUPER_ADMIN_ROLE_IDENTIFIER, SysConst.ADMIN_ROLE_IDENTIFIER}, mode = SaMode.OR)
+    @GetMapping("/getAuthList")
+    public R getAuthList() {
+        try {
+            log.info("查询全部权限");
+            List<Auth> authList = authService.listAllAuth();
+
+            Data data = new Data();
+            data.put("authList", authList);
+            return R.success(data);
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }

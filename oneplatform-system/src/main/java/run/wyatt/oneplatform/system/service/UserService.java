@@ -58,7 +58,7 @@ public interface UserService {
      * @param userId 用户ID
      * @return 角色标识符列表
      */
-    List<String> listActivatedRoleIdentifiers(Long userId);
+    List<String> getRoleIdentifiersOfUser(Long userId);
 
     /**
      * 获取用户所拥有的权限标识符列表
@@ -66,5 +66,5 @@ public interface UserService {
      * @param userId 用户ID
      * @return 权限标识符列表
      */
-    List<String> listActivatedAuthIdentifiers(Long userId);
+    List<String> getAuthIdentifiersOfUser(Long userId);
 }

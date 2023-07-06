@@ -8,19 +8,18 @@ package run.wyatt.oneplatform.system.service;
  */
 public interface CommonService {
     /**
-     * 检查输入的验证码是否正确
-     *
-     * @param captchaKey   验证码KEY
-     * @param captchaInput 输入的验证码
-     * @return true / BusinessException
-     */
-    boolean checkCaptcha(String captchaKey, String captchaInput);
-
-    /**
      * 检查输入的验证码格式是否不正确
      *
      * @param captchaInput 输入的验证码
      * @return true 格式不正确 / false 格式正确
      */
     boolean invalidCaptchaFormat(String captchaInput);
+
+    /**
+     * 检查输入的验证码是否正确
+     *
+     * @param captchaKey   验证码KEY
+     * @param captchaInput 输入的验证码
+     */
+    void checkCaptcha(String captchaKey, String captchaInput);
 }

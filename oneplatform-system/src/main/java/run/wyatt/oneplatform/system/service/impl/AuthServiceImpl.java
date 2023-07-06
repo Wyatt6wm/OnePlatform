@@ -1,6 +1,5 @@
 package run.wyatt.oneplatform.system.service.impl;
 
-import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -24,13 +23,15 @@ public class AuthServiceImpl implements AuthService {
     private AuthDao authDao;
 
     @Override
-    public Long createAuth(Auth auth) {
+    public Auth createAuth(Auth auth) {
         log.info("输入参数: auth={}", auth);
 
         try {
-            Long authId = authDao.insert(auth);
-            log.info("数据库生成主键: authId={}", authId);
-            return authId;
+            auth.setId(null);
+            if (authDao.insert(auth) > 0) {
+                log.info("成功创建权限: authId={}", auth.getId());
+                return auth;
+            }
         } catch (DuplicateKeyException e) {
             log.info(e.getMessage());
             throw new BusinessException("权限标识符重复");
@@ -38,38 +39,60 @@ public class AuthServiceImpl implements AuthService {
             log.info(e.getMessage());
             throw new DatabaseException();
         }
+        return null;
     }
 
     @Override
-    public List<Auth> listAuthDetails(Long userId) {
-        log.info("输入参数: userId={}", userId);
+    public void removeAuth(Long authId) {
+        log.info("输入参数: authId={}", authId);
 
+        long rows = 0;
         try {
-            List<Auth> authDetails = authDao.findAuthsByUserId(userId);
-            log.info("成功查询权限详细信息列表: {}", authDetails);
-
-            return authDetails;
+            rows = authDao.delete(authId);
         } catch (Exception e) {
             log.info(e.getMessage());
             throw new DatabaseException();
         }
+
+        if (rows == 0) {
+            throw new BusinessException("该权限数据不存在");
+        }
+        log.info("成功删除权限记录");
     }
 
     @Override
-    public boolean updateAuthDetail(Auth newAuth) {
-        log.info("输入参数: newAuth={}", newAuth);
+    public Auth updateAuth(Long authId, Auth auth) {
+        log.info("输入参数: authId={}, auth={}", authId, auth);
 
-        if (newAuth.getId() == null) {
+        if (authId == null) {
             throw new BusinessException("权限ID错误");
         }
-        try {
-            int affected = authDao.update(newAuth);
-            log.info("成功更新权限记录");
 
-            return affected == 1;
+        long rows = 0;
+        try {
+            rows = authDao.update(authId, auth);
         } catch (DuplicateKeyException e) {
             log.info(e.getMessage());
             throw new BusinessException("权限标识符重复");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new DatabaseException();
+        }
+
+        if (rows == 0) {
+            throw new BusinessException("该权限数据不存在");
+        }
+        log.info("成功更新权限记录");
+        auth.setId(authId);
+        return auth;
+    }
+
+    @Override
+    public List<Auth> listAllAuth() {
+        try {
+            List<Auth> authList = authDao.findAll();
+            log.info("成功查询全部权限: {}", authList);
+            return authList;
         } catch (Exception e) {
             log.info(e.getMessage());
             throw new DatabaseException();

@@ -23,6 +23,17 @@
     <delete id="delete">
         delete from tb_sys_auth where id=#{authId}
     </delete>
+    <update id="update">
+        update tb_sys_auth set
+        <trim suffixOverrides="," suffix="">
+            id=id,
+            <if test="record.identifier != null">identifier=#{record.identifier},</if>
+            <if test="record.name != null">name=#{record.name},</if>
+            <if test="record.description != null">description=#{record.description},</if>
+            <if test="record.activated != null">activated=#{record.activated},</if>
+        </trim>
+        where id=#{authId}
+    </update>
     <select id="findAll" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
         select * from tb_sys_auth
     </select>
@@ -37,15 +48,4 @@
         from (select * from tb_sys_role_auth where role_id=#{roleId}) RA
         inner join tb_sys_auth A on RA.auth_id=A.id
     </select>
-    <update id="update">
-        update tb_sys_auth set
-        <trim suffixOverrides="," suffix="">
-            id=id,
-            <if test="record.identifier != null">identifier=#{record.identifier},</if>
-            <if test="record.name != null">name=#{record.name},</if>
-            <if test="record.description != null">description=#{record.description},</if>
-            <if test="record.activated != null">activated=#{record.activated},</if>
-        </trim>
-        where id=#{authId}
-    </update>
 </mapper>

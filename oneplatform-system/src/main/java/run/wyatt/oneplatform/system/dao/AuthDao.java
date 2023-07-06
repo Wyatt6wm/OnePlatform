@@ -15,11 +15,11 @@ public interface AuthDao {
 
     long delete(Long authId);
 
+    long update(Long authId, Auth record);
+
     List<Auth> findAll();
 
     List<Auth> findByUserId(Long userId);
 
     List<Auth> findByRoleId(Long roleId);
-
-    long update(Long authId, Auth record);
 }

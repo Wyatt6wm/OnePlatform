@@ -11,8 +11,15 @@ import java.util.List;
  */
 @Mapper
 public interface AuthDao {
+    long insert(Auth record);
 
-    Long insert(Auth record);
-    List<Auth> findAuthsByUserId(Long userId);
-    int update(Auth auth);
+    long delete(Long authId);
+
+    List<Auth> findAll();
+
+    List<Auth> findByUserId(Long userId);
+
+    List<Auth> findByRoleId(Long roleId);
+
+    long update(Long authId, Auth record);
 }

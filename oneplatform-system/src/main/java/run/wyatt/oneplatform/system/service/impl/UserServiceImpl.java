@@ -171,7 +171,7 @@ public class UserServiceImpl implements UserService {
         Integer authChanged = (Integer) redis.opsForValue().get(SysConst.AUTH_CHANGED);
         if (authChanged == null || authChanged == 0) {
             log.info("数据库权限表未发生变更，先查询Redis的Session缓存");
-            auths = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_ROLES_KEY);
+            auths = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_AUTHS_KEY);
         }
 
         if (auths == null) {

@@ -38,5 +38,5 @@ public interface AuthService {
      *
      * @return 权限列表
      */
-    List<Auth> listAllAuth();
+    List<Auth> listAllAuths();
 }

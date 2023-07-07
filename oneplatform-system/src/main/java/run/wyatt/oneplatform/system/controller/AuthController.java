@@ -144,7 +144,7 @@ public class AuthController {
     public R getAuthList() {
         try {
             log.info("查询全部权限");
-            List<Auth> authList = authService.listAllAuth();
+            List<Auth> authList = authService.listAllAuths();
 
             Data data = new Data();
             data.put("authList", authList);

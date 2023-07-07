@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public List<Auth> listAllAuth() {
+    public List<Auth> listAllAuths() {
         try {
             List<Auth> authList = authDao.findAll();
             log.info("成功查询全部权限: {}", authList);

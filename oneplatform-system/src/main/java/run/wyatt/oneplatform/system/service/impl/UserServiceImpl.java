@@ -20,6 +20,7 @@ import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.service.UserService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -132,13 +133,35 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    private void updateRoleRedisChanged() {
+        Date now = new Date();
+        StpUtil.getSession().set(SysConst.ROLE_REDIS_CHANGED, now);
+        log.info("已更新roleRedisChanged缓存为: {}", now);
+    }
+
+    private void updateAuthRedisChanged() {
+        Date now = new Date();
+        StpUtil.getSession().set(SysConst.AUTH_REDIS_CHANGED, now);
+        log.info("已更新authRedisChanged缓存为: {}", now);
+    }
+
     @Override
     public List<String> getRoleIdentifiersOfUser(Long userId) {
         log.info("输入参数: userId={}", userId);
 
         List<String> roles = null;
-        Integer roleChanged = (Integer) redis.opsForValue().get(SysConst.ROLE_CHANGED);
-        if (roleChanged == null || roleChanged == 0) {
+
+        Date dbChanged = (Date) redis.opsForValue().get(SysConst.ROLE_DB_CHANGED);
+        Date redisChanged = (Date) StpUtil.getSession().get(SysConst.ROLE_REDIS_CHANGED);
+        log.info("dbChanged={}, redisChanged={}", dbChanged, redisChanged);
+
+        // 先查询缓存的情况：
+        // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库
+        // 2、有dbChanged，但是无redisChanged：即数据库更新了但缓存没更新，此时应查询数据库
+        // 3、有dbChanged、有redisChanged：这时候比较两者前后：
+        //      --> 如果dbChanged <= redisChanged：表示数据库更新后，已经更新过缓存了，此时先查缓存
+        //      --> 如果dbChanged > redisChanged：表示缓存还没更新，此时应查询数据库
+        if (dbChanged == null || (redisChanged != null && dbChanged.compareTo(redisChanged) <= 0)) {
             log.info("数据库角色表未发生变更，先查询Redis的Session缓存");
             roles = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_ROLES_KEY);
         }
@@ -158,7 +181,11 @@ public class UserServiceImpl implements UserService {
                 log.info(e.getMessage());
                 throw new DatabaseException();
             }
+            StpUtil.getSession().set(CommonConst.REDIS_ROLES_KEY, roles);
+            log.info("已更新缓存");
+            updateRoleRedisChanged();
         }
+
         log.info("用户的角色标识列表: {}", roles);
         return roles;
     }
@@ -168,8 +195,18 @@ public class UserServiceImpl implements UserService {
         log.info("输入参数: userId={}", userId);
 
         List<String> auths = null;
-        Integer authChanged = (Integer) redis.opsForValue().get(SysConst.AUTH_CHANGED);
-        if (authChanged == null || authChanged == 0) {
+
+        Date dbChanged = (Date) redis.opsForValue().get(SysConst.AUTH_DB_CHANGED);
+        Date redisChanged = (Date) StpUtil.getSession().get(SysConst.AUTH_REDIS_CHANGED);
+        log.info("dbChanged={}, redisChanged={}", dbChanged, redisChanged);
+
+        // 先查询缓存的情况：
+        // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库
+        // 2、有dbChanged，但是无redisChanged：即数据库更新了但缓存没更新，此时应查询数据库
+        // 3、有dbChanged、有redisChanged：这时候比较两者前后：
+        //      --> 如果dbChanged <= redisChanged：表示数据库更新后，已经更新过缓存了，此时先查缓存
+        //      --> 如果dbChanged > redisChanged：表示缓存还没更新，此时应查询数据库
+        if (dbChanged == null || (redisChanged != null && dbChanged.compareTo(redisChanged) <= 0)) {
             log.info("数据库权限表未发生变更，先查询Redis的Session缓存");
             auths = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_AUTHS_KEY);
         }
@@ -189,7 +226,11 @@ public class UserServiceImpl implements UserService {
                 log.info(e.getMessage());
                 throw new DatabaseException();
             }
+            StpUtil.getSession().set(CommonConst.REDIS_AUTHS_KEY, auths);
+            log.info("已更新缓存");
+            updateAuthRedisChanged();
         }
+
         log.info("用户的权限标识列表: {}", auths);
         return auths;
     }

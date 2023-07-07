@@ -25,13 +25,6 @@ public interface AuthService {
     void removeAuth(Long authId);
 
     /**
-     * 查询所有权限
-     *
-     * @return 权限列表
-     */
-    List<Auth> listAllAuth();
-
-    /**
      * 根据权限ID更新权限记录
      *
      * @param id   要更新的权限ID
@@ -39,4 +32,11 @@ public interface AuthService {
      * @return 更新后的权限对象
      */
     Auth updateAuth(Long id, Auth auth);
+
+    /**
+     * 查询所有权限
+     *
+     * @return 权限列表
+     */
+    List<Auth> listAllAuth();
 }

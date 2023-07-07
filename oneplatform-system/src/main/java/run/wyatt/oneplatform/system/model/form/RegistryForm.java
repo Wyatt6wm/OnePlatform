@@ -7,9 +7,9 @@ import lombok.Data;
  * @date 2023/6/17 11:22
  */
 @Data
-public class SignUpForm {
+public class RegistryForm {
     private String username;
     private String password;
-    private String verifyCodeKey;
-    private String verifyCode;
+    private String captchaKey;
+    private String captchaInput;
 }

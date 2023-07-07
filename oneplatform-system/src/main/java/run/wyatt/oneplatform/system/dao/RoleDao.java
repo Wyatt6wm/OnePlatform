@@ -11,5 +11,5 @@ import java.util.List;
  */
 @Mapper
 public interface RoleDao {
-    List<Role> findActivatedRolesByUserId(Long userId);
+    List<Role> findByUserId(Long userId);
 }

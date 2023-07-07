@@ -1,4 +1,4 @@
-package run.wyatt.oneplatform.common.utils;
+package run.wyatt.oneplatform.common.util;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -10,7 +10,7 @@ import java.util.Base64;
  * @author Wyatt
  * @date 2023/6/15 10:31
  */
-public class ImageUtils {
+public class ImageUtil {
     public static String bufferedImageToBase64(BufferedImage image, String imageType) {
         if (imageType == null || imageType.isEmpty()) {
             imageType = "png";

@@ -7,7 +7,7 @@ import lombok.Data;
  * @date 2023/6/12 14:49
  */
 @Data
-public class Permission {
+public class Auth {
     private Long id;
     private String identifier;
     private String name;

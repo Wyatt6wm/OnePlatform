@@ -11,6 +11,14 @@ import java.util.List;
  */
 @Mapper
 public interface RoleDao {
+    long insert(Role record);
+
+    long delete(Long roleId);
+
+    long update(Long roleId, Role record);
+
+    List<Role> findAll();
+
     List<Role> findByUserId(Long userId);
 
     List<Role> findValidByUserId(Long userId);  // 要求角色activated

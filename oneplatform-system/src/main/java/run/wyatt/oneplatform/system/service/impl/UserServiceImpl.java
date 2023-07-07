@@ -146,7 +146,7 @@ public class UserServiceImpl implements UserService {
         if (roles == null) {
             log.info("数据库角色表曾经发生变更，或Redis的Session缓存无角色数据，查询数据库");
             try {
-                List<Role> roleList = roleDao.findByUserId(userId);
+                List<Role> roleList = roleDao.findValidByUserId(userId);
                 roles = new ArrayList<>();
                 for (Role item : roleList) {
                     if (item.getActivated()) {
@@ -177,7 +177,7 @@ public class UserServiceImpl implements UserService {
         if (auths == null) {
             log.info("数据库权限表曾经发生变更，或Redis的Session缓存无权限数据，查询数据库");
             try {
-                List<Auth> authList = authDao.findByUserId(userId);
+                List<Auth> authList = authDao.findValidByUserId(userId);
                 auths = new ArrayList<>();
                 for (Auth item : authList) {
                     if (item.getActivated()) {

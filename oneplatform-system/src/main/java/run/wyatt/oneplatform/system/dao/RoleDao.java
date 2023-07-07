@@ -12,4 +12,6 @@ import java.util.List;
 @Mapper
 public interface RoleDao {
     List<Role> findByUserId(Long userId);
+
+    List<Role> findValidByUserId(Long userId);  // 要求角色activated
 }

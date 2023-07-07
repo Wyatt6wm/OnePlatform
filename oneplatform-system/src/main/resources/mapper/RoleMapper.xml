@@ -8,4 +8,9 @@
         from (select * from tb_sys_user_role where user_id=#{userId}) UR
         inner join tb_sys_role R on UR.role_id=R.id
     </select>
+    <select id="findValidByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Role">
+        select distinct R.id, R.identifier, R.name, R.description, R.activated
+        from (select * from tb_sys_user_role where user_id=#{userId}) UR
+        inner join tb_sys_role R on UR.role_id=R.id and R.activated=1
+    </select>
 </mapper>

@@ -27,11 +27,11 @@ public interface AuthService {
     /**
      * 根据权限ID更新权限记录
      *
-     * @param id   要更新的权限ID
-     * @param auth 新的权限数据
+     * @param authId 要更新的权限ID
+     * @param auth   新的权限数据
      * @return 更新后的权限对象
      */
-    Auth updateAuth(Long id, Auth auth);
+    Auth updateAuth(Long authId, Auth auth);
 
     /**
      * 查询所有权限

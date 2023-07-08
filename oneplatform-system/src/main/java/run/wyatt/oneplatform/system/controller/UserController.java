@@ -27,7 +27,7 @@ import java.util.Map;
  * @date 2023/6/16 15:26
  */
 @Slf4j
-@Api(tags = "用户功能接口")
+@Api(tags = "用户接口")
 @RestController
 @RequestMapping("/api/sys/user")
 public class UserController {
@@ -169,7 +169,6 @@ public class UserController {
     }
 
     @ApiOperation("退出登录")
-    @SaCheckLogin
     @GetMapping("/logout")
     public R logout() {
         StpUtil.logout();
@@ -180,10 +179,9 @@ public class UserController {
     @SaCheckLogin
     @GetMapping("/getRolesOfUser")
     public R getRolesOfUser() {
+        Long userId = StpUtil.getLoginIdAsLong();
         try {
-            Long userId = StpUtil.getLoginIdAsLong();
             List<String> roles = userService.getRoleIdentifiersOfUser(userId);
-
             Data data = new Data();
             data.put("roles", roles);
             return R.success(data);
@@ -196,10 +194,9 @@ public class UserController {
     @SaCheckLogin
     @GetMapping("/getAuthsOfUser")
     public R getAuthsOfUser() {
+        Long userId = StpUtil.getLoginIdAsLong();
         try {
-            Long userId = StpUtil.getLoginIdAsLong();
             List<String> auths = userService.getAuthIdentifiersOfUser(userId);
-
             Data data = new Data();
             data.put("auths", auths);
             return R.success(data);

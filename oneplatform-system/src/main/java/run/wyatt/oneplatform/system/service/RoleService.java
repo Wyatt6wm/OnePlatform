@@ -2,6 +2,7 @@ package run.wyatt.oneplatform.system.service;
 
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
+import run.wyatt.oneplatform.system.model.form.RoleAuthForm;
 
 import java.util.List;
 
@@ -17,6 +18,14 @@ public interface RoleService {
      * @return 新角色对象
      */
     Role createRole(Role role);
+
+    /**
+     * 变更角色授权
+     *
+     * @param grant    待授权列表
+     * @param disgrant 待解除授权列表
+     */
+    void changeRoleGrants(List<RoleAuthForm> grant, List<RoleAuthForm> disgrant);
 
     /**
      * 删除角色记录
@@ -35,9 +44,22 @@ public interface RoleService {
     Role updateRole(Long roleId, Role role);
 
     /**
+     * 数据库角色表变更时间更新到Redis
+     */
+    void updateRoleDbChanged();
+
+    /**
      * 查询所有角色
      *
      * @return 角色列表
      */
     List<Role> listAllRoles();
+
+    /**
+     * 查询角色的所有权限
+     *
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    List<Auth> listRoleAuths(Long roleId);
 }

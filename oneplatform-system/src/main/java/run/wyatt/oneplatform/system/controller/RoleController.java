@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
+import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
+import run.wyatt.oneplatform.system.model.form.RoleAuthForm;
 import run.wyatt.oneplatform.system.model.form.RoleForm;
 import run.wyatt.oneplatform.system.service.RoleService;
 
@@ -71,6 +73,14 @@ public class RoleController {
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }
+    }
+
+    @ApiOperation("变更角色授权")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @PostMapping("/changeRoleGrants")
+    public R changeRoleGrants(@RequestBody List<RoleAuthForm> grantForm, @RequestBody List<RoleAuthForm> disgrantForm) {
+
     }
 
     @ApiOperation("删除角色")
@@ -145,6 +155,31 @@ public class RoleController {
 
             Data data = new Data();
             data.put("roleList", roleList);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取角色所有的权限")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @GetMapping("/getRoleAuths")
+    public R getRoleAuths(@RequestParam("id") Long roleId) {
+        log.info("请求参数: id={}", roleId);
+        try {
+            Assert.notNull(roleId, "请求参数为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail("请求参数错误");
+        }
+
+        try {
+            log.info("查询角色的全部权限");
+            List<Auth> authList = roleService.listRoleAuths(roleId);
+
+            Data data = new Data();
+            data.put("authList", authList);
             return R.success(data);
         } catch (Exception e) {
             return R.fail(e.getMessage());

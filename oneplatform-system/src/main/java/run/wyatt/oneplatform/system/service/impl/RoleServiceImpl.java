@@ -7,9 +7,12 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.exception.DatabaseException;
+import run.wyatt.oneplatform.system.dao.AuthDao;
 import run.wyatt.oneplatform.system.dao.RoleDao;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
+import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
+import run.wyatt.oneplatform.system.model.form.RoleAuthForm;
 import run.wyatt.oneplatform.system.service.RoleService;
 
 import java.util.Date;
@@ -26,6 +29,8 @@ public class RoleServiceImpl implements RoleService {
     private RedisTemplate<String, Object> redis;
     @Autowired
     private RoleDao roleDao;
+    @Autowired
+    private AuthDao authDao;
 
     @Override
     public Role createRole(Role role) {
@@ -44,13 +49,23 @@ public class RoleServiceImpl implements RoleService {
         }
 
         if (rows == 0) {
-            throw new BusinessException("创建角色失败");
+
         }
 
         updateRoleDbChanged();
 
         log.info("成功创建角色: roleId={}", role.getId());
         return role;
+    }
+
+    @Override
+    public void changeRoleGrants(List<RoleAuthForm> grant, List<RoleAuthForm> disgrant) {
+        log.info("输入参数: grant={}, disgrant={}", grant, disgrant);
+
+        for (RoleAuthForm item: grant) {
+
+        }
+//        updateRoleDbChanged();
     }
 
     @Override
@@ -104,7 +119,8 @@ public class RoleServiceImpl implements RoleService {
         return role;
     }
 
-    private void updateRoleDbChanged() {
+    @Override
+    public void updateRoleDbChanged() {
         Date now = new Date();
         redis.opsForValue().set(SysConst.ROLE_DB_CHANGED, now);
         log.info("已更新roleDbChanged缓存为: {}", now);
@@ -116,6 +132,19 @@ public class RoleServiceImpl implements RoleService {
             List<Role> roleList = roleDao.findAll();
             log.info("成功查询全部角色: {}", roleList);
             return roleList;
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new DatabaseException();
+        }
+    }
+
+    @Override
+    public List<Auth> listRoleAuths(Long roleId) {
+        log.info("输入参数: roleId={}", roleId);
+        try {
+            List<Auth> authList = authDao.findByRoleId(roleId);
+            log.info("成功查询用户的全部权限: {}", authList);
+            return authList;
         } catch (Exception e) {
             log.info(e.getMessage());
             throw new DatabaseException();

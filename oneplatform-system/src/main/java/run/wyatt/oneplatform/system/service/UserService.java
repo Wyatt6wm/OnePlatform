@@ -35,6 +35,24 @@ public interface UserService {
     Long createUser(String username, String password);
 
     /**
+     * 为用户绑定多个角色
+     *
+     * @param userId  用户ID
+     * @param roleIds 待绑定的角色ID列表
+     * @return 绑定失败的角色ID列表
+     */
+    List<Long> bind(Long userId, List<Long> roleIds);
+
+    /**
+     * 为用户解除绑定多个角色
+     *
+     * @param userId  用户ID
+     * @param roleIds 待解除绑定的角色ID列表
+     * @return 解除绑定失败的角色ID列表
+     */
+    List<Long> unbind(Long userId, List<Long> roleIds);
+
+    /**
      * 为用户绑定角色
      *
      * @param userId 用户ID

@@ -12,6 +12,7 @@ import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.service.AuthService;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -104,10 +105,12 @@ public class AuthServiceImpl implements AuthService {
         return auth;
     }
 
-    private void updateAuthDbChanged() {
+    @Override
+    public void updateAuthDbChanged() {
         Date now = new Date();
         redis.opsForValue().set(SysConst.AUTH_DB_CHANGED, now);
-        log.info("已更新authDbChanged缓存为: {}", now);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
+        log.info("已更新authDbChanged缓存为: {}", sdf.format(now));
     }
 
     @Override

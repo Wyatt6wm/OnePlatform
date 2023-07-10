@@ -34,6 +34,12 @@ public interface AuthService {
     Auth updateAuth(Long authId, Auth auth);
 
     /**
+     * 数据库权限表变更时间更新到Redis
+     * 权限本身及角色绑定权限的关系发生变化时都应调用
+     */
+    void updateAuthDbChanged();
+
+    /**
      * 查询所有权限
      *
      * @return 权限列表

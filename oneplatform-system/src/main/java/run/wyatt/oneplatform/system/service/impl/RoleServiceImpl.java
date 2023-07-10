@@ -8,13 +8,16 @@ import org.springframework.stereotype.Service;
 import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.exception.DatabaseException;
 import run.wyatt.oneplatform.system.dao.AuthDao;
+import run.wyatt.oneplatform.system.dao.RoleAuthDao;
 import run.wyatt.oneplatform.system.dao.RoleDao;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
-import run.wyatt.oneplatform.system.model.form.RoleAuthForm;
+import run.wyatt.oneplatform.system.service.AuthService;
 import run.wyatt.oneplatform.system.service.RoleService;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +34,11 @@ public class RoleServiceImpl implements RoleService {
     private RoleDao roleDao;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private RoleAuthDao roleAuthDao;
+    @Autowired
+    private AuthService authService;
+
 
     @Override
     public Role createRole(Role role) {
@@ -49,7 +57,7 @@ public class RoleServiceImpl implements RoleService {
         }
 
         if (rows == 0) {
-
+            throw new BusinessException("创建角色失败");
         }
 
         updateRoleDbChanged();
@@ -59,13 +67,51 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public void changeRoleGrants(List<RoleAuthForm> grant, List<RoleAuthForm> disgrant) {
-        log.info("输入参数: grant={}, disgrant={}", grant, disgrant);
+    public List<Long> grant(Long roleId, List<Long> authIds) {
+        log.info("输入参数: roleId={}, authIds={}", roleId, authIds);
+        if (roleId == null || authIds == null) throw new BusinessException("参数错误");
 
-        for (RoleAuthForm item: grant) {
-
+        List<Long> failList = new ArrayList<>();
+        for (Long authId : authIds) {
+            try {
+                long rows = roleAuthDao.insert(roleId, authId);
+                log.info("授权成功: (roleId={}, authId={})", roleId, authId);
+            } catch (Exception e) {
+                failList.add(authId);
+            }
         }
-//        updateRoleDbChanged();
+        log.info("授权失败的authId：{}", failList);
+
+        // 有授权成功时，要更新标志，以动态更新用户权限缓存
+        if (failList.size() < authIds.size()) {
+            authService.updateAuthDbChanged();
+        }
+
+        return failList;
+    }
+
+    @Override
+    public List<Long> disgrant(Long roleId, List<Long> authIds) {
+        log.info("输入参数: roleId={}, authIds={}", roleId, authIds);
+        if (roleId == null || authIds == null) throw new BusinessException("参数错误");
+
+        List<Long> failList = new ArrayList<>();
+        for (Long authId : authIds) {
+            try {
+                long rows = roleAuthDao.delete(roleId, authId);
+                log.info("解除授权成功: (roleId={}, authId={})", roleId, authId);
+            } catch (Exception e) {
+                failList.add(authId);
+            }
+        }
+        log.info("解除授权失败的authId：{}", failList);
+
+        // 有授权成功时，要更新标志，以动态更新用户权限缓存
+        if (failList.size() < authIds.size()) {
+            authService.updateAuthDbChanged();
+        }
+
+        return failList;
     }
 
     @Override
@@ -123,7 +169,8 @@ public class RoleServiceImpl implements RoleService {
     public void updateRoleDbChanged() {
         Date now = new Date();
         redis.opsForValue().set(SysConst.ROLE_DB_CHANGED, now);
-        log.info("已更新roleDbChanged缓存为: {}", now);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
+        log.info("已更新roleDbChanged缓存为: {}", sdf.format(now));
     }
 
     @Override

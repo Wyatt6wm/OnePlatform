@@ -3,6 +3,7 @@ package run.wyatt.oneplatform.system.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
+import com.mysql.cj.log.Log;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
-import run.wyatt.oneplatform.system.model.form.RoleAuthForm;
+import run.wyatt.oneplatform.system.model.form.GrantForm;
 import run.wyatt.oneplatform.system.model.form.RoleForm;
 import run.wyatt.oneplatform.system.service.RoleService;
 
@@ -79,8 +80,25 @@ public class RoleController {
     @SaCheckLogin
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @PostMapping("/changeRoleGrants")
-    public R changeRoleGrants(@RequestBody List<RoleAuthForm> grantForm, @RequestBody List<RoleAuthForm> disgrantForm) {
+    public R changeRoleGrants(@RequestBody GrantForm grantForm) {
+        log.info("请求参数: {}", grantForm);
+        try {
+            Assert.notNull(grantForm, "请求参数为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail("请求参数错误");
+        }
 
+        try {
+            List<Long> failGrant = roleService.grant(grantForm.getRoleId(), grantForm.getGrantList());
+            List<Long> failDisgrant = roleService.disgrant(grantForm.getRoleId(), grantForm.getDisgrantList());
+            Data data = new Data();
+            data.put("failGrant", failGrant);
+            data.put("failDisgrant", failDisgrant);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
     }
 
     @ApiOperation("删除角色")

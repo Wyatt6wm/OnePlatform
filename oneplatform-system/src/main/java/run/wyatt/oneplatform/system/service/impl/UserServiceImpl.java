@@ -157,7 +157,7 @@ public class UserServiceImpl implements UserService {
         Date dbChanged = (Date) redis.opsForValue().get(SysConst.ROLE_DB_CHANGED);
         Date redisChanged = (Date) StpUtil.getSession().get(SysConst.ROLE_REDIS_CHANGED);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("dbChanged={}, redisChanged={}", sdf.format(dbChanged), sdf.format(redisChanged));
+        log.info("dbChanged={}, redisChanged={}", dbChanged == null? null: sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
 
         // 先查询缓存的情况：
         // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库
@@ -203,7 +203,7 @@ public class UserServiceImpl implements UserService {
         Date dbChanged = (Date) redis.opsForValue().get(SysConst.AUTH_DB_CHANGED);
         Date redisChanged = (Date) StpUtil.getSession().get(SysConst.AUTH_REDIS_CHANGED);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("dbChanged={}, redisChanged={}", sdf.format(dbChanged), sdf.format(redisChanged));
+        log.info("dbChanged={}, redisChanged={}", dbChanged == null? null: sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
 
         // 先查询缓存的情况：
         // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库

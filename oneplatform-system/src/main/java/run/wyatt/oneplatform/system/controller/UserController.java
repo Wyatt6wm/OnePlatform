@@ -7,7 +7,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
 import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
@@ -17,7 +21,6 @@ import run.wyatt.oneplatform.system.model.form.RegistryForm;
 import run.wyatt.oneplatform.system.service.CommonService;
 import run.wyatt.oneplatform.system.service.UserService;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,8 +83,13 @@ public class UserController {
 
         // 创建用户
         try {
-            Long userId = userService.createUser(username, password);
-            return R.success();
+            User user = userService.createUser(username, password);
+            user.setPassword(null);
+            user.setSalt(null);
+
+            Data data = new Data();
+            data.put("user", user);
+            return R.success(data);
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }

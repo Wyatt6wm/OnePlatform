@@ -7,21 +7,21 @@
             keyColumn="id" keyProperty="id">
         insert into tb_sys_user (
         <trim suffixOverrides="," suffix="">
-            <if test="record.username != null">username,</if>
-            <if test="record.password != null">password,</if>
-            <if test="record.salt != null">salt,</if>
-            <if test="record.nickname != null">nickname,</if>
-            <if test="record.motto != null">motto,</if>
-            <if test="record.avatar != null">avatar,</if>
+            <if test="username != null">username,</if>
+            <if test="password != null">password,</if>
+            <if test="salt != null">salt,</if>
+            <if test="nickname != null">nickname,</if>
+            <if test="motto != null">motto,</if>
+            <if test="avatar != null">avatar,</if>
         </trim>
         ) values (
         <trim suffixOverrides="," suffix="">
-            <if test="record.username != null">#{record.username},</if>
-            <if test="record.password != null">#{record.password},</if>
-            <if test="record.salt != null">#{record.salt},</if>
-            <if test="record.nickname != null">#{record.nickname},</if>
-            <if test="record.motto != null">#{record.motto},</if>
-            <if test="record.avatar != null">#{record.avatar},</if>
+            <if test="username != null">#{username},</if>
+            <if test="password != null">#{password},</if>
+            <if test="salt != null">#{salt},</if>
+            <if test="nickname != null">#{nickname},</if>
+            <if test="motto != null">#{motto},</if>
+            <if test="avatar != null">#{avatar},</if>
         </trim>
         )
     </insert>

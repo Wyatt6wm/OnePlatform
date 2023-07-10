@@ -30,9 +30,9 @@ public interface UserService {
      *
      * @param username 用户名
      * @param password 密码
-     * @return 用户ID
+     * @return 用户对象
      */
-    Long createUser(String username, String password);
+    User createUser(String username, String password);
 
     /**
      * 为用户绑定多个角色
@@ -51,15 +51,6 @@ public interface UserService {
      * @return 解除绑定失败的角色ID列表
      */
     List<Long> unbind(Long userId, List<Long> roleIds);
-
-    /**
-     * 为用户绑定角色
-     *
-     * @param userId 用户ID
-     * @param roleId 角色ID
-     * @return true / false
-     */
-    boolean bindRole(Long userId, Long roleId);
 
     /**
      * 根据用户名查询数据库并校验用户名密码

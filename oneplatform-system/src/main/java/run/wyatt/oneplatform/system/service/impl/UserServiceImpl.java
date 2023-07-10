@@ -17,6 +17,8 @@ import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
+import run.wyatt.oneplatform.system.service.AuthService;
+import run.wyatt.oneplatform.system.service.RoleService;
 import run.wyatt.oneplatform.system.service.UserService;
 
 import java.text.SimpleDateFormat;
@@ -43,6 +45,10 @@ public class UserServiceImpl implements UserService {
     private RoleDao roleDao;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private AuthService authService;
 
     @Override
     public boolean invalidUsernameFormat(String username) {
@@ -55,7 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long createUser(String username, String password) {
+    public User createUser(String username, String password) {
         log.info("输入参数: username={} password=*", username);
 
         // 判断用户是否已被注册
@@ -77,39 +83,78 @@ public class UserServiceImpl implements UserService {
 
         // 保存到数据库
         User record = new User();
+        record.setId(null);
         record.setUsername(username);
         record.setPassword(encryptedPassword);
         record.setSalt(salt);
-        Long userId = null;
         try {
-            userId = userDao.insert(record);
+            long rows = userDao.insert(record);
         } catch (Exception e) {
             log.info(e.getMessage());
             throw new DatabaseException();
         }
-        log.info("用户成功注册到数据库: userId={}", userId);
+        log.info("用户成功注册到数据库: userId={}", record.getId());
 
         // 为用户绑定默认角色
-        if (userId != null) {
-            bindRole(userId, SysConst.DEFAULT_ROLE_ID);
+        if (record.getId() != null) {
+            List<Long> defaultRole = new ArrayList<>();
+            defaultRole.add(SysConst.DEFAULT_ROLE_ID);
+            bind(record.getId(), defaultRole);
+            log.info("成功为新注册用户绑定默认角色");
         }
 
         log.info("成功创建用户");
-        return userId;
+        return record;
     }
 
     @Override
-    public boolean bindRole(Long userId, Long roleId) {
-        log.info("输入参数: userId={}, roleId={}", userId, roleId);
+    public List<Long> bind(Long userId, List<Long> roleIds) {
+        log.info("输入参数: userId={}, roleIds={}", userId, roleIds);
+        if (userId == null || roleIds == null) throw new BusinessException("参数错误");
 
-        try {
-            long affected = userRoleDao.insert(userId, roleId);
-            log.info("成功为用户绑定角色");
-            return affected == 1;
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
+        List<Long> failList = new ArrayList<>();
+        for (Long roleId : roleIds) {
+            try {
+                long rows = userRoleDao.insert(userId, roleId);
+                log.info("绑定成功: (userId={}, roleId={})", userId, roleId);
+            } catch (Exception e) {
+                failList.add(roleId);
+            }
         }
+        log.info("绑定失败的roleId：{}", failList);
+
+        // 有授权成功时，要更新标志，以动态更新用户角色、权限缓存
+        if (failList.size() < roleIds.size()) {
+            roleService.updateRoleDbChanged();
+            authService.updateAuthDbChanged();
+        }
+
+        return failList;
+    }
+
+    @Override
+    public List<Long> unbind(Long userId, List<Long> roleIds) {
+        log.info("输入参数: userId={}, roleIds={}", userId, roleIds);
+        if (userId == null || roleIds == null) throw new BusinessException("参数错误");
+
+        List<Long> failList = new ArrayList<>();
+        for (Long roleId : roleIds) {
+            try {
+                long rows = userRoleDao.delete(userId, roleId);
+                log.info("解除绑定成功: (userId={}, roleId={})", userId, roleId);
+            } catch (Exception e) {
+                failList.add(roleId);
+            }
+        }
+        log.info("解除绑定失败的roleId：{}", failList);
+
+        // 有授权成功时，要更新标志，以动态更新用户角色、权限缓存
+        if (failList.size() < roleIds.size()) {
+            roleService.updateRoleDbChanged();
+            authService.updateAuthDbChanged();
+        }
+
+        return failList;
     }
 
     @Override
@@ -157,7 +202,7 @@ public class UserServiceImpl implements UserService {
         Date dbChanged = (Date) redis.opsForValue().get(SysConst.ROLE_DB_CHANGED);
         Date redisChanged = (Date) StpUtil.getSession().get(SysConst.ROLE_REDIS_CHANGED);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("dbChanged={}, redisChanged={}", dbChanged == null? null: sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
+        log.info("dbChanged={}, redisChanged={}", dbChanged == null ? null : sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
 
         // 先查询缓存的情况：
         // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库
@@ -203,7 +248,7 @@ public class UserServiceImpl implements UserService {
         Date dbChanged = (Date) redis.opsForValue().get(SysConst.AUTH_DB_CHANGED);
         Date redisChanged = (Date) StpUtil.getSession().get(SysConst.AUTH_REDIS_CHANGED);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("dbChanged={}, redisChanged={}", dbChanged == null? null: sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
+        log.info("dbChanged={}, redisChanged={}", dbChanged == null ? null : sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
 
         // 先查询缓存的情况：
         // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库

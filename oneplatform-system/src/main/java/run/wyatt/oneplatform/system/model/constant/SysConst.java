@@ -8,8 +8,10 @@ public class SysConst {
     // ----- Redis缓存相关 -----
     public static final String CAPTCHA_REDIS_KEY_PREFIX = "captcha:";   // 验证码缓存KEY前缀
     public static final int CAPTCHA_REDIS_EXP_60_SECS = 60; // 验证码缓存过期时长：60秒
-    public static final String ROLE_CHANGED = "roleChanged"; // 角色更新标志缓存KEY
-    public static final String AUTH_CHANGED = "authChanged"; // 权限更新标志缓存KEY
+    public static final String ROLE_DB_CHANGED = "roleDbChanged"; // 角色最近更新数据库时间的缓存KEY
+    public static final String ROLE_REDIS_CHANGED="roleRedisChanged";// 角色最近更新缓存时间的缓存KEY
+    public static final String AUTH_DB_CHANGED = "authDbChanged"; // 权限最近更新数据库时间的缓存KEY
+    public static final String AUTH_REDIS_CHANGED="authRedisChanged";// 权限最近更新缓存时间的缓存KEY
     // ----- 用户角色权限相关 -----
     public static final Long SUPER_ADMIN_ROLE_ID = 1L;  // 超级管理员角色ID
     public static final Long ADMIN_ROLE_ID = 2L;    // 管理员角色ID

@@ -20,7 +20,6 @@ import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.form.AuthForm;
 import run.wyatt.oneplatform.system.service.AuthService;
-import run.wyatt.oneplatform.system.service.UserService;
 
 import java.util.List;
 
@@ -33,8 +32,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/sys/auth")
 public class AuthController {
-    @Autowired
-    private UserService userService;
     @Autowired
     private AuthService authService;
 
@@ -144,7 +141,7 @@ public class AuthController {
     public R getAuthList() {
         try {
             log.info("查询全部权限");
-            List<Auth> authList = authService.listAllAuth();
+            List<Auth> authList = authService.listAllAuths();
 
             Data data = new Data();
             data.put("authList", authList);

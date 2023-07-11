@@ -7,4 +7,12 @@ import java.util.HashMap;
  * @date 2023/7/6 16:00
  */
 public class MapData extends HashMap<String, Object> {
+    public MapData() {
+        super();
+    }
+
+    public MapData(String key, Object value) {
+        super();
+        this.put(key, value);
+    }
 }

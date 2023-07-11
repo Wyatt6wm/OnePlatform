@@ -102,7 +102,7 @@ public class UserController {
             Assert.notNull(loginForm.getCaptchaInput(), "验证码为null");
         } catch (Exception e) {
             log.info(e.getMessage());
-            return R.fail("请求参数错误");
+            throw new BusinessException("请求参数错误");
         }
 
         String username = loginForm.getUsername();
@@ -113,33 +113,23 @@ public class UserController {
 
         // 格式校验
         if (userService.wrongUsernameFormat(username)) {
-            return R.fail("用户名格式错误");
+            throw new BusinessException("用户名格式错误");
         }
         if (userService.wrongPasswordFormat(password)) {
-            return R.fail("密码格式错误");
+            throw new BusinessException("密码格式错误");
         }
         if (commonService.wrongCaptchaFormat(captchaInput)) {
-            return R.fail("验证码格式错误");
+            throw new BusinessException("验证码格式错误");
         }
         log.info("输入参数格式校验通过");
 
         // 校验验证码
-        try {
-            commonService.verifyCaptcha(captchaKey, captchaInput);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        commonService.verifyCaptcha(captchaKey, captchaInput);
 
         // 验证用户名密码
-        User user = null;
-        try {
-            user = userService.verifyByUsername(username, password);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        User user = userService.verifyByUsername(username, password);
         user.setPassword(null);
         user.setSalt(null);
-        log.info("user={}", user);
 
         // 登录：Sa-Token框架自动生成token、获取角色和权限，并缓存到Redis
         StpUtil.login(user.getId());
@@ -150,25 +140,18 @@ public class UserController {
         log.info("成功保存用户详细信息到Session缓存");
 
         // 获取用户角色和权限并缓存到Redis
-        List<String> roles = null;
-        List<String> auths = null;
-        try {
-            roles = userService.getRoleIdentifiersOfUser(user.getId());
-            auths = userService.getAuthIdentifiersOfUser(user.getId());
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        List<String> roles = userService.getRoleIdentifiers(user.getId());
+        List<String> auths = userService.getAuthIdentifiers(user.getId());
         StpUtil.getSession().set(CommonConst.REDIS_ROLES_KEY, roles);
         StpUtil.getSession().set(CommonConst.REDIS_AUTHS_KEY, auths);
         log.info("成功保存角色、权限到Session缓存");
 
         // 组装响应数据
-        Map<String, Object> data = new HashMap<>();
+        MapData data = new MapData();
         data.put("token", StpUtil.getTokenInfo().getTokenValue());
         data.put("tokenExpiredTime", System.currentTimeMillis() + StpUtil.getTokenActivityTimeout() * 1000);
         data.put("roles", roles);
         data.put("auths", auths);
-
         return R.success(data);
     }
 

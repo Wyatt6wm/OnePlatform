@@ -69,7 +69,7 @@ public interface UserService {
     User editProfile(Long userId, User profile);
 
     /**
-     * 根据用户名查询数据库并校验用户名密码
+     * 根据用户名、密码进行认证
      *
      * @param username 用户名
      * @param password 名（明文）
@@ -83,7 +83,7 @@ public interface UserService {
      * @param userId 用户ID
      * @return 角色标识符列表
      */
-    List<String> getRoleIdentifiersOfUser(Long userId);
+    List<String> getRoleIdentifiers(Long userId);
 
     /**
      * 获取用户所拥有的权限标识符列表
@@ -91,7 +91,7 @@ public interface UserService {
      * @param userId 用户ID
      * @return 权限标识符列表
      */
-    List<String> getAuthIdentifiersOfUser(Long userId);
+    List<String> getAuthIdentifiers(Long userId);
 
     /**
      * 查询所有用户（脱敏）

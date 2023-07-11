@@ -217,16 +217,8 @@ public class UserServiceImpl implements UserService {
     public User verifyByUsername(String username, String password) {
         log.info("输入参数: username={}, password=*", username);
 
-        // 查询数据库
-        User user = null;
-        try {
-            user = userDao.findByUsername(username);
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
-        }
 
-        // 判断用户名和密码是否正确
+        User user = userDao.findByUsername(username);
         if (user == null || !user.getPassword().equals(PasswordUtil.encode(password, user.getSalt()))) {
             throw new BusinessException("用户名或密码错误");
         }
@@ -272,106 +264,134 @@ public class UserServiceImpl implements UserService {
         log.info("用户 {} 未登录，无需设置已设置refreshAuthRedis", userId);
     }
 
-    private void updateRoleRedisChanged() {
-        Date now = new Date();
-        StpUtil.getSession().set(SysConst.ROLE_REDIS_CHANGED, now);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("已更新roleRedisChanged缓存为: {}", sdf.format(now));
+    private void setRefreshRoleRedisZero(Long userId) {
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            userSession.set(SysConst.REFRESH_ROLE_REDIS, 0);
+            log.info("已设置refreshRoleRedis=0");
+        }
     }
 
-    private void updateAuthRedisChanged() {
-        Date now = new Date();
-        StpUtil.getSession().set(SysConst.AUTH_REDIS_CHANGED, now);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("已更新authRedisChanged缓存为: {}", sdf.format(now));
+    private void setRefreshAuthRedisZero(Long userId) {
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            userSession.set(SysConst.REFRESH_AUTH_REDIS, 0);
+            log.info("已设置refreshAuthRedis=0");
+        }
     }
 
+
+    /**
+     * 判断不需要更新缓存的role标识
+     *
+     * @param userId 用户ID
+     * @return true: 不需要更新 / false: 需要更新
+     */
+    private boolean noNeedRefreshRoleRedis(Long userId) {
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            return 0 == (int) userSession.get(SysConst.REFRESH_ROLE_REDIS);
+        }
+        return true;
+    }
+
+    /**
+     * 判断不需要更新缓存的auth标识
+     *
+     * @param userId 用户ID
+     * @return true: 不需要更新 / false: 需要更新
+     */
+    private boolean noNeedRefreshAuthRedis(Long userId) {
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            return 0 == (int) userSession.get(SysConst.REFRESH_AUTH_REDIS);
+        }
+        return true;
+    }
+
+    private void updateRoleRedisChangeTime() {
+        Date now = new Date();
+        StpUtil.getSession().set(SysConst.ROLE_REDIS_CHANGE_TIME, now);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
+        log.info("已更新roleRedisChangeTime缓存为: {}", sdf.format(now));
+    }
+
+    private void updateAuthRedisChangeTime() {
+        Date now = new Date();
+        StpUtil.getSession().set(SysConst.AUTH_REDIS_CHANGE_TIME, now);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
+        log.info("已更新authRedisChangeTime缓存为: {}", sdf.format(now));
+    }
+
+    // 先查询缓存的情况：数据库无变更（对比时间标记） and 绑定关系无变更（refreshRoleRedis/refreshAuthRedis是否值为1）
+    // 一、判断数据库无变更
+    //      1、无dbChanged ==> 数据库无变更
+    //      2、有dbChanged、有redisChanged，且dbChanged <= redisChanged ==> 数据库有变更，但是已经更新过缓存了
+    // 二、判断绑定关系无变更
+    //      缓存中refreshRoleRedis/refreshAuthRedis不存在，或者值为0
     @Override
-    public List<String> getRoleIdentifiersOfUser(Long userId) {
+    public List<String> getRoleIdentifiers(Long userId) {
         log.info("输入参数: userId={}", userId);
 
-        List<String> roles = null;
-
-        Date dbChanged = (Date) redis.opsForValue().get(SysConst.ROLE_DB_CHANGED);
-        Date redisChanged = (Date) StpUtil.getSession().get(SysConst.ROLE_REDIS_CHANGED);
+        Date t1 = (Date) redis.opsForValue().get(SysConst.ROLE_DB_CHANGE_TIME);
+        Date t2 = (Date) StpUtil.getSession().get(SysConst.ROLE_REDIS_CHANGE_TIME);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("dbChanged={}, redisChanged={}", dbChanged == null ? null : sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
+        log.info("数据库更新时间： {}", t1 == null ? null : sdf.format(t1));
+        log.info("缓存更新时间: {}", t2 == null ? null : sdf.format(t2));
 
-        // 先查询缓存的情况：
-        // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库
-        // 2、有dbChanged，但是无redisChanged：即数据库更新了但缓存没更新，此时应查询数据库
-        // 3、有dbChanged、有redisChanged：这时候比较两者前后：
-        //      --> 如果dbChanged <= redisChanged：表示数据库更新后，已经更新过缓存了，此时先查缓存
-        //      --> 如果dbChanged > redisChanged：表示缓存还没更新，此时应查询数据库
-        if (dbChanged == null || (redisChanged != null && dbChanged.compareTo(redisChanged) <= 0)) {
-            log.info("数据库角色表未发生变更，先查询Redis的Session缓存");
+        List<String> roles = null;
+        if ((t1 == null || (t2 != null && t1.compareTo(t2) <= 0)) && noNeedRefreshRoleRedis(userId)) {
+            log.info("先查询Redis的Session缓存");
             roles = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_ROLES_KEY);
         }
 
         if (roles == null) {
-            log.info("数据库角色表曾经发生变更，或Redis的Session缓存无角色数据，查询数据库");
-            try {
-                List<Role> roleList = roleDao.findValidByUserId(userId);
-                roles = new ArrayList<>();
-                for (Role item : roleList) {
-                    if (item.getActivated()) {
-                        roles.add(item.getIdentifier());
-                    }
-                }
-                log.info("完成标识符字符串列表提取");
-            } catch (Exception e) {
-                log.info(e.getMessage());
-                throw new DatabaseException();
+            log.info("无缓存或缓存不是最新，查询数据库，并更新缓存");
+            List<Role> activatedRoles = roleDao.findActivatedByUserId(userId);
+            roles = new ArrayList<>();
+            for (Role item : activatedRoles) {
+                roles.add(item.getIdentifier());
             }
+            log.info("完成标识符字符串列表提取");
             StpUtil.getSession().set(CommonConst.REDIS_ROLES_KEY, roles);
             log.info("已更新缓存");
-            updateRoleRedisChanged();
+            updateRoleRedisChangeTime();
+            setRefreshRoleRedisZero(userId);
         }
 
         log.info("用户的角色标识列表: {}", roles);
         return roles;
     }
 
+    // 规则参考getRoleIdentifiers()前写的规则
     @Override
-    public List<String> getAuthIdentifiersOfUser(Long userId) {
+    public List<String> getAuthIdentifiers(Long userId) {
         log.info("输入参数: userId={}", userId);
 
-        List<String> auths = null;
-
-        Date dbChanged = (Date) redis.opsForValue().get(SysConst.AUTH_DB_CHANGED);
-        Date redisChanged = (Date) StpUtil.getSession().get(SysConst.AUTH_REDIS_CHANGED);
+        Date t1 = (Date) redis.opsForValue().get(SysConst.AUTH_DB_CHANGE_TIME);
+        Date t2 = (Date) StpUtil.getSession().get(SysConst.AUTH_REDIS_CHANGE_TIME);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("dbChanged={}, redisChanged={}", dbChanged == null ? null : sdf.format(dbChanged), redisChanged == null ? null : sdf.format(redisChanged));
+        log.info("数据库更新时间： {}", t1 == null ? null : sdf.format(t1));
+        log.info("缓存更新时间: {}", t2 == null ? null : sdf.format(t2));
 
-        // 先查询缓存的情况：
-        // 1、无dbChanged：即从来没有更新过数据库，此时先查询缓存，缓存没数据才查询数据库
-        // 2、有dbChanged，但是无redisChanged：即数据库更新了但缓存没更新，此时应查询数据库
-        // 3、有dbChanged、有redisChanged：这时候比较两者前后：
-        //      --> 如果dbChanged <= redisChanged：表示数据库更新后，已经更新过缓存了，此时先查缓存
-        //      --> 如果dbChanged > redisChanged：表示缓存还没更新，此时应查询数据库
-        if (dbChanged == null || (redisChanged != null && dbChanged.compareTo(redisChanged) <= 0)) {
-            log.info("数据库权限表未发生变更，先查询Redis的Session缓存");
+        List<String> auths = null;
+        if (t1 == null || (t2 != null && t1.compareTo(t2) <= 0)) {
+            log.info("先查询Redis的Session缓存");
             auths = (List<String>) StpUtil.getSession().get(CommonConst.REDIS_AUTHS_KEY);
         }
 
         if (auths == null) {
-            log.info("数据库权限表曾经发生变更，或Redis的Session缓存无权限数据，查询数据库");
-            try {
-                List<Auth> authList = authDao.findValidByUserId(userId);
-                auths = new ArrayList<>();
-                for (Auth item : authList) {
-                    if (item.getActivated()) {
-                        auths.add(item.getIdentifier());
-                    }
-                }
-                log.info("完成标识符字符串列表提取");
-            } catch (Exception e) {
-                log.info(e.getMessage());
-                throw new DatabaseException();
+            log.info("无缓存或缓存不是最新，查询数据库，并更新缓存");
+            List<Auth> activatedAuths = authDao.findActivatedByUserId(userId);
+            auths = new ArrayList<>();
+            for (Auth item : activatedAuths) {
+                auths.add(item.getIdentifier());
             }
+            log.info("完成标识符字符串列表提取");
             StpUtil.getSession().set(CommonConst.REDIS_AUTHS_KEY, auths);
             log.info("已更新缓存");
-            updateAuthRedisChanged();
+            updateAuthRedisChangeTime();
+            setRefreshAuthRedisZero(userId);
         }
 
         log.info("用户的权限标识列表: {}", auths);

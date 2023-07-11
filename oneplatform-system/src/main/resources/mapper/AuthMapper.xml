@@ -43,7 +43,7 @@
         inner join tb_sys_role_auth RA on UR.role_id=RA.role_id
         inner join tb_sys_auth A on RA.auth_id=A.id
     </select>
-    <select id="findValidByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
+    <select id="findActivatedByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
         select distinct A.id, A.identifier, A.name, A.description, A.activated
         from (select * from tb_sys_user_role where user_id=#{userId}) UR
         inner join tb_sys_role R on UR.role_id=R.id and R.activated=1

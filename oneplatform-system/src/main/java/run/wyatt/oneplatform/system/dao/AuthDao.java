@@ -21,7 +21,7 @@ public interface AuthDao {
 
     List<Auth> findByUserId(Long userId);
 
-    List<Auth> findValidByUserId(Long userId);  // 要求满足角色activated且权限activated
+    List<Auth> findActivatedByUserId(Long userId);  // 要求满足角色activated且权限activated
 
     List<Auth> findByRoleId(Long roleId);
 }

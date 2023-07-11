@@ -18,11 +18,11 @@ public class StpInterfaceImpl implements StpInterface {
 
     @Override
     public List<String> getPermissionList(Object loginId, String loginType) {
-        return userService.getAuthIdentifiersOfUser(Long.valueOf(String.valueOf(loginId)));
+        return userService.getAuthIdentifiers(Long.valueOf(String.valueOf(loginId)));
     }
 
     @Override
     public List<String> getRoleList(Object loginId, String loginType) {
-        return userService.getRoleIdentifiersOfUser(Long.valueOf(String.valueOf(loginId)));
+        return userService.getRoleIdentifiers(Long.valueOf(String.valueOf(loginId)));
     }
 }

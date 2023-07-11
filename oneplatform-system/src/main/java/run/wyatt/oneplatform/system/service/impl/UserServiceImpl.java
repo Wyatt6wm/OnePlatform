@@ -1,5 +1,6 @@
 package run.wyatt.oneplatform.system.service.impl;
 
+import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,12 +52,12 @@ public class UserServiceImpl implements UserService {
     private AuthService authService;
 
     @Override
-    public boolean invalidUsernameFormat(String username) {
+    public boolean wrongUsernameFormat(String username) {
         return !username.matches(USERNAME_REGEXP);
     }
 
     @Override
-    public boolean invalidPasswordFormat(String password) {
+    public boolean wrongPasswordFormat(String password) {
         return !password.matches(PASSWORD_REGEXP);
     }
 
@@ -65,14 +66,7 @@ public class UserServiceImpl implements UserService {
         log.info("输入参数: username={} password=*", username);
 
         // 判断用户是否已被注册
-        User user = null;
-        try {
-            user = userDao.findByUsername(username);
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
-        }
-        if (user != null) {
+        if (userDao.findByUsername(username) != null) {
             throw new BusinessException("用户已注册");
         }
 
@@ -87,27 +81,43 @@ public class UserServiceImpl implements UserService {
         record.setUsername(username);
         record.setPassword(encryptedPassword);
         record.setSalt(salt);
-        try {
-            long rows = userDao.insert(record);
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
-        }
-        log.info("用户成功注册到数据库: userId={}", record.getId());
 
-        // 为用户绑定默认角色
-        if (record.getId() != null) {
-            List<Long> defaultRole = new ArrayList<>();
-            defaultRole.add(SysConst.DEFAULT_ROLE_ID);
-            List<Long> fail = bind(record.getId(), defaultRole);
-            if (fail.size() > 0) {
+        if (userDao.insert(record) == 1) {
+            log.info("用户成功注册到数据库: userId={}", record.getId());
+
+            // 为用户绑定默认角色
+            try {
+                bind(record.getId(), SysConst.DEFAULT_ROLE_ID);
+                log.info("成功为新注册用户绑定默认角色");
+            } catch (Exception e) {
                 throw new BusinessException("用户绑定默认角色失败");
             }
-            log.info("成功为新注册用户绑定默认角色");
+
+            log.info("创建用户成功完成");
+            return record;
+        } else {
+            throw new BusinessException("用户创建失败");
+        }
+    }
+
+    @Override
+    public void bind(Long userId, Long roleId) {
+        log.info("输入参数: userId={}, roleId={}", userId, roleId);
+        if (userId == null || roleId == null) {
+            throw new BusinessException("参数错误");
         }
 
-        log.info("成功创建用户");
-        return record;
+        if (userRoleDao.insert(userId, roleId) == 1) {
+            log.info("绑定成功");
+        } else {
+            throw new BusinessException("绑定失败");
+        }
+
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            log.info("用户 {} 已登录，绑定新角色后，为其标记须更新角色和权限标识符缓存", userId);
+            // TODO
+        }
     }
 
     @Override

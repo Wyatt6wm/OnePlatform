@@ -15,7 +15,7 @@ public interface UserService {
      * @param username 输入的用户名
      * @return true 格式不正确 / false 格式正确
      */
-    boolean invalidUsernameFormat(String username);
+    boolean wrongUsernameFormat(String username);
 
     /**
      * 检查密码输入格式是否不正确
@@ -23,7 +23,7 @@ public interface UserService {
      * @param password 输入的密码
      * @return true 格式不正确 / false 格式正确
      */
-    boolean invalidPasswordFormat(String password);
+    boolean wrongPasswordFormat(String password);
 
     /**
      * 创建用户
@@ -33,6 +33,13 @@ public interface UserService {
      * @return 用户对象
      */
     User createUser(String username, String password);
+
+    /**
+     * 为用户绑定单个角色
+     * @param userId 用户ID
+     * @param roleId 待绑定的角色ID
+     */
+    void bind(Long userId, Long roleId);
 
     /**
      * 为用户绑定多个角色

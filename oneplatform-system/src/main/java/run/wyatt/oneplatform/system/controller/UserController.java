@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
+import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.http.Data;
+import run.wyatt.oneplatform.common.http.MapData;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
-import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
@@ -56,7 +57,7 @@ public class UserController {
             Assert.notNull(registryForm.getCaptchaInput(), "验证码为null");
         } catch (Exception e) {
             log.info(e.getMessage());
-            return R.fail("请求参数错误");
+            throw new BusinessException("请求参数错误");
         }
 
         String username = registryForm.getUsername();
@@ -66,36 +67,28 @@ public class UserController {
         log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
-        if (userService.invalidUsernameFormat(username)) {
-            return R.fail("用户名格式错误");
+        if (userService.wrongUsernameFormat(username)) {
+            throw new BusinessException("用户名格式错误");
         }
-        if (userService.invalidPasswordFormat(password)) {
-            return R.fail("密码格式错误");
+        if (userService.wrongPasswordFormat(password)) {
+            throw new BusinessException("密码格式错误");
         }
-        if (commonService.invalidCaptchaFormat(captchaInput)) {
-            return R.fail("验证码格式错误");
+        if (commonService.wrongCaptchaFormat(captchaInput)) {
+            throw new BusinessException("验证码格式错误");
         }
         log.info("输入参数格式校验通过");
 
         // 校验验证码
-        try {
-            commonService.checkCaptcha(captchaKey, captchaInput);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        commonService.verifyCaptcha(captchaKey, captchaInput);
 
         // 创建用户
-        try {
-            User user = userService.createUser(username, password);
-            user.setPassword(null);
-            user.setSalt(null);
+        User user = userService.createUser(username, password);
+        user.setPassword(null);
+        user.setSalt(null);
 
-            Data data = new Data();
-            data.put("user", user);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        MapData data = new MapData();
+        data.put("user", user);
+        return R.success(data);
     }
 
     @ApiOperation("登录认证")
@@ -119,20 +112,20 @@ public class UserController {
         log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
-        if (userService.invalidUsernameFormat(username)) {
+        if (userService.wrongUsernameFormat(username)) {
             return R.fail("用户名格式错误");
         }
-        if (userService.invalidPasswordFormat(password)) {
+        if (userService.wrongPasswordFormat(password)) {
             return R.fail("密码格式错误");
         }
-        if (commonService.invalidCaptchaFormat(captchaInput)) {
+        if (commonService.wrongCaptchaFormat(captchaInput)) {
             return R.fail("验证码格式错误");
         }
         log.info("输入参数格式校验通过");
 
         // 校验验证码
         try {
-            commonService.checkCaptcha(captchaKey, captchaInput);
+            commonService.verifyCaptcha(captchaKey, captchaInput);
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }

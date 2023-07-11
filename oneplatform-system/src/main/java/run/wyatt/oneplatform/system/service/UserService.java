@@ -53,6 +53,15 @@ public interface UserService {
     List<Long> unbind(Long userId, List<Long> roleIds);
 
     /**
+     * 修改用户信息
+     *
+     * @param userId  用户ID
+     * @param profile 用户信息
+     * @return 更新后的用户对象
+     */
+    User editProfile(Long userId, User profile);
+
+    /**
      * 根据用户名查询数据库并校验用户名密码
      *
      * @param username 用户名

@@ -99,7 +99,10 @@ public class UserServiceImpl implements UserService {
         if (record.getId() != null) {
             List<Long> defaultRole = new ArrayList<>();
             defaultRole.add(SysConst.DEFAULT_ROLE_ID);
-            bind(record.getId(), defaultRole);
+            List<Long> fail = bind(record.getId(), defaultRole);
+            if (fail.size() > 0) {
+                throw new BusinessException("用户绑定默认角色失败");
+            }
             log.info("成功为新注册用户绑定默认角色");
         }
 
@@ -158,6 +161,51 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User editProfile(Long userId, User profile) {
+        log.info("输入参数: userId={}, profile={}", userId, profile);
+
+        String nickname = profile.getNickname();
+
+        if (nickname != null && !nickname.isEmpty()) {
+            User user;
+            try {
+                user = userDao.findByNickname(profile.getNickname());
+            } catch (Exception e) {
+                log.info(e.getMessage());
+                throw new DatabaseException();
+            }
+            if (user != null) {
+                throw new BusinessException("昵称已被占用");
+            }
+        }
+
+        long rows;
+        try {
+            rows = userDao.update(userId, profile);
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new DatabaseException();
+        }
+
+        if (rows == 1) {
+            log.info("成功修改用户信息");
+
+            User user = null;
+            try {
+                user = userDao.findById(userId);
+            } catch (Exception e) {
+                log.info(e.getMessage());
+                throw new DatabaseException();
+            }
+            updateProfileRedis(user);
+
+            return profile;
+        } else {
+            throw new BusinessException("修改用户信息失败");
+        }
+    }
+
+    @Override
     public User verifyByUsername(String username, String password) {
         log.info("输入参数: username={}, password=*", username);
 
@@ -177,6 +225,11 @@ public class UserServiceImpl implements UserService {
         log.info("用户名和密码通过验证");
 
         return user;
+    }
+
+    private void updateProfileRedis(User profile) {
+        StpUtil.getSession().set(CommonConst.REDIS_PROFILE_KEY, profile);
+        log.info("已更新缓存的profile信息: {}", profile);
     }
 
     private void updateRoleRedisChanged() {

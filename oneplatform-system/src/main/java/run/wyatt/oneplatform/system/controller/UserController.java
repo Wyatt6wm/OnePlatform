@@ -17,6 +17,7 @@ import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
+import run.wyatt.oneplatform.system.model.form.ProfileForm;
 import run.wyatt.oneplatform.system.model.form.RegistryForm;
 import run.wyatt.oneplatform.system.service.CommonService;
 import run.wyatt.oneplatform.system.service.UserService;
@@ -57,10 +58,7 @@ public class UserController {
         String password = registryForm.getPassword();
         String captchaKey = registryForm.getCaptchaKey();
         String captchaInput = registryForm.getCaptchaInput();
-        log.info("username={}", username);
-        log.info("password=*");
-        log.info("captchaKey={}", captchaKey);
-        log.info("captchaInput={}", captchaInput);
+        log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
         if (userService.invalidUsernameFormat(username)) {
@@ -113,7 +111,7 @@ public class UserController {
         String password = loginForm.getPassword();
         String captchaKey = loginForm.getCaptchaKey();
         String captchaInput = loginForm.getCaptchaInput();
-        log.info("输入参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
+        log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
         if (userService.invalidUsernameFormat(username)) {
@@ -221,5 +219,31 @@ public class UserController {
         data.put("profile", StpUtil.getSession().get(CommonConst.REDIS_PROFILE_KEY));
         log.info("获取用户详细信息成功");
         return R.success(data);
+    }
+
+    @ApiOperation("修改用户信息")
+    @SaCheckLogin
+    @PostMapping("/editProfile")
+    public R editProfile(@RequestBody ProfileForm profileForm) {
+        log.info("请求参数: {}", profileForm);
+        try {
+            Assert.notNull(profileForm, "请求参数为null");
+            Assert.notNull(profileForm.getId(), "用户ID为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            return R.fail("请求参数错误");
+        }
+
+        User user = new User();
+        user.setNickname(profileForm.getNickname());
+        user.setMotto(profileForm.getMotto());
+        try {
+            User result = userService.editProfile(profileForm.getId(), user);
+            Data data = new Data();
+            data.put("profile", result);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
     }
 }

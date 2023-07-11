@@ -28,9 +28,7 @@ import run.wyatt.oneplatform.system.service.CommonService;
 import run.wyatt.oneplatform.system.service.UserService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Wyatt
@@ -168,7 +166,7 @@ public class UserController {
     public R getRoleIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
         List<String> roles = userService.getRoleIdentifiers(userId);
-        Data data = new Data();
+        MapData data = new MapData();
         data.put("roles", roles);
         return R.success(data);
     }
@@ -179,16 +177,16 @@ public class UserController {
     public R getAuthIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
         List<String> auths = userService.getAuthIdentifiers(userId);
-        Data data = new Data();
+        MapData data = new MapData();
         data.put("auths", auths);
         return R.success(data);
     }
 
-    @ApiOperation("获取用户详细信息")
+    @ApiOperation("获取用户信息")
     @SaCheckLogin
     @GetMapping("/getProfile")
     public R getProfile() {
-        Data data = new Data();
+        MapData data = new MapData();
         data.put("profile", StpUtil.getSession().get(CommonConst.REDIS_PROFILE_KEY));
         log.info("获取用户详细信息成功");
         return R.success(data);
@@ -203,22 +201,23 @@ public class UserController {
             Assert.notNull(profileForm, "请求参数为null");
         } catch (Exception e) {
             log.info(e.getMessage());
-            return R.fail("请求参数错误");
+            throw new BusinessException("请求参数错误");
         }
 
         Long userId = StpUtil.getLoginIdAsLong();
+        String nickname = profileForm.getNickname();
+        String motto = profileForm.getMotto();
 
-        User user = new User();
-        user.setNickname(profileForm.getNickname().isEmpty() ? null : profileForm.getNickname());
-        user.setMotto(profileForm.getMotto().isEmpty() ? null : profileForm.getMotto());
-        try {
-            User result = userService.editProfile(userId, user);
-            Data data = new Data();
-            data.put("profile", result);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        User profile = new User();
+        profile.setNickname((nickname == null || nickname.isBlank()) ? null : nickname);
+        profile.setMotto((motto == null || motto.isBlank()) ? null : motto);
+
+        // TODO
+        User result = userService.editProfile(userId, profile);
+
+        MapData data = new MapData();
+        data.put("profile", result);
+        return R.success(data);
     }
 
     @ApiOperation("获取用户列表")
@@ -233,7 +232,7 @@ public class UserController {
             log.info("查询每个用户绑定的权限名称列表");
             List<Data> list = new ArrayList<>();
             for (User user : userList) {
-                List<String> identifierList = userService.getRoleIdentifiersOfUser(user.getId());
+                List<String> identifierList = userService.getRoleIdentifiers(user.getId());
                 Data item = new Data();
                 item.put("user", user);
                 item.put("roleNames", identifierList);

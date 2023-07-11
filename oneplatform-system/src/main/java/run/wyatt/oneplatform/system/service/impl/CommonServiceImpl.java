@@ -47,12 +47,12 @@ public class CommonServiceImpl implements CommonService {
     }
 
     @Override
-    public boolean invalidCaptchaFormat(String captchaInput) {
+    public boolean wrongCaptchaFormat(String captchaInput) {
         return !captchaInput.matches(CAPTCHA_REGEXP);
     }
 
     @Override
-    public void checkCaptcha(String captchaKey, String captchaInput) {
+    public void verifyCaptcha(String captchaKey, String captchaInput) {
         log.info("输入参数: captchaKey={}, captchaInput={}", captchaKey, captchaInput);
 
         Object captchaText = redis.opsForValue().get(SysConst.CAPTCHA_REDIS_KEY_PREFIX + captchaKey);

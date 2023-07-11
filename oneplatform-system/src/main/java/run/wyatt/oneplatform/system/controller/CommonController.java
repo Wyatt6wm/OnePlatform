@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.service.CommonService;
 
@@ -35,7 +36,7 @@ public class CommonController {
         try {
             return R.success(commonService.generateCaptcha());
         } catch (Exception e) {
-            return R.fail("获取验证码错误");
+            throw new BusinessException("获取验证码错误");
         }
     }
 }

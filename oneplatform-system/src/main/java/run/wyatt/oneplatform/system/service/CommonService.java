@@ -22,13 +22,13 @@ public interface CommonService {
      * @param captchaInput 输入的验证码
      * @return true 格式不正确 / false 格式正确
      */
-    boolean invalidCaptchaFormat(String captchaInput);
+    boolean wrongCaptchaFormat(String captchaInput);
 
     /**
-     * 检查输入的验证码是否正确
+     * 查验验证码，查验失败时抛出异常
      *
      * @param captchaKey   验证码KEY
      * @param captchaInput 输入的验证码
      */
-    void checkCaptcha(String captchaKey, String captchaInput);
+    void verifyCaptcha(String captchaKey, String captchaInput);
 }

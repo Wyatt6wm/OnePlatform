@@ -85,4 +85,11 @@ public interface UserService {
      * @return 权限标识符列表
      */
     List<String> getAuthIdentifiersOfUser(Long userId);
+
+    /**
+     * 查询所有用户（脱敏）
+     *
+     * @return 用户列表
+     */
+    List<User> listAllUsersDesensitized();
 }

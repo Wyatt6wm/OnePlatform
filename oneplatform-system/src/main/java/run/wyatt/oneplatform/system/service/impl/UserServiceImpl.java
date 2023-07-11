@@ -337,4 +337,25 @@ public class UserServiceImpl implements UserService {
         log.info("用户的权限标识列表: {}", auths);
         return auths;
     }
+
+    @Override
+    public List<User> listAllUsersDesensitized() {
+        try {
+            List<User> userList = userDao.findAll();
+            log.info("成功查询全部用户");
+
+            for (int i = 0; i < userList.size(); i++) {
+                User user = userList.get(i);
+                user.setPassword(null);
+                user.setSalt(null);
+                userList.set(i, user);
+            }
+            log.info("成功脱敏: {}", userList);
+
+            return userList;
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new DatabaseException();
+        }
+    }
 }

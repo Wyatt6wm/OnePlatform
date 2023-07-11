@@ -1,6 +1,8 @@
 package run.wyatt.oneplatform.system.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
 import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
+import run.wyatt.oneplatform.system.model.constant.SysConst;
+import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
@@ -22,6 +26,7 @@ import run.wyatt.oneplatform.system.model.form.RegistryForm;
 import run.wyatt.oneplatform.system.service.CommonService;
 import run.wyatt.oneplatform.system.service.UserService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,12 +241,39 @@ public class UserController {
         Long userId = StpUtil.getLoginIdAsLong();
 
         User user = new User();
-        user.setNickname(profileForm.getNickname().isEmpty()? null : profileForm.getNickname());
-        user.setMotto(profileForm.getMotto().isEmpty()? null : profileForm.getMotto());
+        user.setNickname(profileForm.getNickname().isEmpty() ? null : profileForm.getNickname());
+        user.setMotto(profileForm.getMotto().isEmpty() ? null : profileForm.getMotto());
         try {
             User result = userService.editProfile(userId, user);
             Data data = new Data();
             data.put("profile", result);
+            return R.success(data);
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    @ApiOperation("获取用户列表")
+    @SaCheckLogin
+    @SaCheckRole(value = {SysConst.SUPER_ADMIN_ROLE_IDENTIFIER, SysConst.ADMIN_ROLE_IDENTIFIER}, mode = SaMode.OR)
+    @GetMapping("/getUserList")
+    public R getUserList() {
+        try {
+            log.info("查询全部用户");
+            List<User> userList = userService.listAllUsersDesensitized();
+
+            log.info("查询每个用户绑定的权限名称列表");
+            List<Data> list = new ArrayList<>();
+            for (User user : userList) {
+                List<String> identifierList = userService.getRoleIdentifiersOfUser(user.getId());
+                Data item = new Data();
+                item.put("user", user);
+                item.put("roleNames", identifierList);
+                list.add(item);
+            }
+
+            Data data = new Data();
+            data.put("userList", list);
             return R.success(data);
         } catch (Exception e) {
             return R.fail(e.getMessage());

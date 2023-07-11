@@ -34,6 +34,9 @@
         </trim>
         where id=#{userId}
     </update>
+    <select id="findAll" resultType="run.wyatt.oneplatform.system.model.entity.User">
+        select * from tb_sys_user
+    </select>
     <select id="findById" resultType="run.wyatt.oneplatform.system.model.entity.User">
         select * from tb_sys_user where id=#{id}
     </select>

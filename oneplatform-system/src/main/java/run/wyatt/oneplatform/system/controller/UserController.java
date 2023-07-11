@@ -228,17 +228,18 @@ public class UserController {
         log.info("请求参数: {}", profileForm);
         try {
             Assert.notNull(profileForm, "请求参数为null");
-            Assert.notNull(profileForm.getId(), "用户ID为null");
         } catch (Exception e) {
             log.info(e.getMessage());
             return R.fail("请求参数错误");
         }
 
+        Long userId = StpUtil.getLoginIdAsLong();
+
         User user = new User();
-        user.setNickname(profileForm.getNickname());
-        user.setMotto(profileForm.getMotto());
+        user.setNickname(profileForm.getNickname().isEmpty()? null : profileForm.getNickname());
+        user.setMotto(profileForm.getMotto().isEmpty()? null : profileForm.getMotto());
         try {
-            User result = userService.editProfile(profileForm.getId(), user);
+            User result = userService.editProfile(userId, user);
             Data data = new Data();
             data.put("profile", result);
             return R.success(data);

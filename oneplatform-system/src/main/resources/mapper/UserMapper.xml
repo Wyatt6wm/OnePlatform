@@ -26,17 +26,12 @@
         )
     </insert>
     <update id="update">
-        update tb_sys_user (
+        update tb_sys_user set
         <trim suffixOverrides="," suffix="">
-            <if test="record.nickname != null">nickname,</if>
-            <if test="record.motto != null">motto,</if>
+            id=id,
+            <if test="record.nickname != null">nickname=#{record.nickname},</if>
+            <if test="record.motto != null">motto=#{record.motto},</if>
         </trim>
-        ) values (
-        <trim suffixOverrides="," suffix="">
-            <if test="record.nickname != null">#{record.nickname},</if>
-            <if test="record.motto != null">#{record.motto},</if>
-        </trim>
-        )
         where id=#{userId}
     </update>
     <select id="findById" resultType="run.wyatt.oneplatform.system.model.entity.User">

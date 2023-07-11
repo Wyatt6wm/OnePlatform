@@ -10,5 +10,8 @@ import run.wyatt.oneplatform.system.model.entity.User;
 @Mapper
 public interface UserDao {
     long insert(User record);
+    long update(Long userId, User record);
+    User findById(Long id);
     User findByUsername(String username);
+    User findByNickname(String nickname);
 }

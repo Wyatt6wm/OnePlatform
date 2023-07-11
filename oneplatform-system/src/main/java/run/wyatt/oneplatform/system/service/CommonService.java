@@ -1,5 +1,7 @@
 package run.wyatt.oneplatform.system.service;
 
+import run.wyatt.oneplatform.common.http.MapData;
+
 /**
  * 公共服务，不属于任何一部分的、公用的服务放在这里
  *
@@ -7,6 +9,13 @@ package run.wyatt.oneplatform.system.service;
  * @date 2023/6/20 22:21
  */
 public interface CommonService {
+    /**
+     * 生成验证码
+     *
+     * @return {captchaKey 验证码KEY, captchaImage 验证码Base64图像}
+     */
+    MapData generateCaptcha();
+
     /**
      * 检查输入的验证码格式是否不正确
      *

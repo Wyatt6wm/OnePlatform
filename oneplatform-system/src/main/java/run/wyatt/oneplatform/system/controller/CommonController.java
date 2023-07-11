@@ -9,14 +9,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.common.util.ImageUtil;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 
 import java.awt.image.BufferedImage;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -50,13 +49,12 @@ public class CommonController {
         // 根据文本生成图片并转成Base64格式
         BufferedImage captchaImage = producer.createImage(captchaText);
         String captchaImageBase64 = ImageUtil.bufferedImageToBase64(captchaImage, "jpeg");
-        log.info("验证码KEY[{}]", captchaKey);
-        log.info("验证码[{}]", captchaText);
+        log.info("验证码KEY: {}", captchaKey);
+        log.info("验证码: {}", captchaText);
 
-        Map<String, Object> data = new HashMap<>();
+        Data data = new Data();
         data.put("captchaKey", captchaKey);
         data.put("captchaImage", captchaImageBase64);
-
         return R.success(data);
     }
 }

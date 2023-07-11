@@ -113,11 +113,9 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("绑定失败");
         }
 
-        SaSession userSession = StpUtil.getSessionByLoginId(userId);
-        if (userSession != null) {
-            log.info("用户 {} 已登录，绑定新角色后，为其标记须更新角色和权限标识符缓存", userId);
-            // TODO
-        }
+        log.info("为用户标记须更新角色和权限标识符缓存");
+        setRefreshRoleRedis(userId);
+        setRefreshAuthRedis(userId);
     }
 
     @Override
@@ -240,6 +238,38 @@ public class UserServiceImpl implements UserService {
     private void updateProfileRedis(User profile) {
         StpUtil.getSession().set(CommonConst.REDIS_PROFILE_KEY, profile);
         log.info("已更新缓存的profile信息: {}", profile);
+    }
+
+    /**
+     * 若用户已登录，将Session的refreshRoleRedis设置为1
+     * 表示用户查询其缓存的权限标识时应该访问数据库来更新缓存
+     *
+     * @param userId 用户ID
+     */
+    private void setRefreshRoleRedis(Long userId) {
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            userSession.set(SysConst.REFRESH_ROLE_REDIS, 1);
+            log.info("已设置refreshRoleRedis");
+            return;
+        }
+        log.info("用户 {} 未登录，无需设置已设置refreshRoleRedis", userId);
+    }
+
+    /**
+     * 若用户已登录，将Session的refreshAuthRedis设置为1
+     * 表示用户查询其缓存的权限标识时应该访问数据库来更新缓存
+     *
+     * @param userId 用户ID
+     */
+    private void setRefreshAuthRedis(Long userId) {
+        SaSession userSession = StpUtil.getSessionByLoginId(userId);
+        if (userSession != null) {
+            userSession.set(SysConst.REFRESH_AUTH_REDIS, 1);
+            log.info("已设置refreshAuthRedis");
+            return;
+        }
+        log.info("用户 {} 未登录，无需设置已设置refreshAuthRedis", userId);
     }
 
     private void updateRoleRedisChanged() {

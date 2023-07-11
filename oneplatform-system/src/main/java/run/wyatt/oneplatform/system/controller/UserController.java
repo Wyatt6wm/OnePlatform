@@ -164,32 +164,24 @@ public class UserController {
 
     @ApiOperation("查询用户角色标识")
     @SaCheckLogin
-    @GetMapping("/getRolesOfUser")
-    public R getRolesOfUser() {
+    @GetMapping("/getRoleIdentifiers")
+    public R getRoleIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
-        try {
-            List<String> roles = userService.getRoleIdentifiersOfUser(userId);
-            Data data = new Data();
-            data.put("roles", roles);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        List<String> roles = userService.getRoleIdentifiers(userId);
+        Data data = new Data();
+        data.put("roles", roles);
+        return R.success(data);
     }
 
     @ApiOperation("查询用户权限标识")
     @SaCheckLogin
-    @GetMapping("/getAuthsOfUser")
-    public R getAuthsOfUser() {
+    @GetMapping("/getAuthIdentifiers")
+    public R getAuthIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
-        try {
-            List<String> auths = userService.getAuthIdentifiersOfUser(userId);
-            Data data = new Data();
-            data.put("auths", auths);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        List<String> auths = userService.getAuthIdentifiers(userId);
+        Data data = new Data();
+        data.put("auths", auths);
+        return R.success(data);
     }
 
     @ApiOperation("获取用户详细信息")

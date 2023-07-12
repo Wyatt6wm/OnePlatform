@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("创建权限失败");
         }
 
-        updateAuthDbChangeTime();
+        setAuthDbChangeTime();
 
         log.info("成功创建权限: authId={}", auth.getId());
         return auth;
@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("该权限数据不存在");
         }
 
-        updateAuthDbChangeTime();
+        setAuthDbChangeTime();
 
         log.info("成功删除权限记录");
     }
@@ -102,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("该权限数据不存在");
         }
 
-        updateAuthDbChangeTime();
+        setAuthDbChangeTime();
 
         log.info("成功更新权限记录");
         auth.setId(authId);
@@ -110,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void updateAuthDbChangeTime() {
+    public void setAuthDbChangeTime() {
         Date now = new Date();
         redis.opsForValue().set(SysConst.AUTH_DB_CHANGE_TIME, now);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");

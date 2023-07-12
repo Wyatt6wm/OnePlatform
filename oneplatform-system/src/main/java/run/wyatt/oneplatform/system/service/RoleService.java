@@ -56,7 +56,7 @@ public interface RoleService {
      * 数据库角色表变更时间更新到Redis
      * 角色本身及用户绑定角色的关系发生变化时都应调用
      */
-    void updateRoleDbChangeTime();
+    void setRoleDbChangeTime();
 
     void setRefreshRoleRedisTrue(Long userId);
 
@@ -69,6 +69,14 @@ public interface RoleService {
      * @return 角色标识符列表
      */
     List<String> getActivatedRoleIdentifiers(Long userId);
+
+    /**
+     * 查询用户所有角色
+     *
+     * @param userId 用户ID
+     * @return 角色列表
+     */
+    List<Role> listRoles(Long userId);
 
     /**
      * 查询所有角色

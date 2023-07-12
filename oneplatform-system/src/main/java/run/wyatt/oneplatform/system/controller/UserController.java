@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
 import run.wyatt.oneplatform.common.exception.BusinessException;
-import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.MapData;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
+import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
@@ -225,26 +225,26 @@ public class UserController {
         return R.success(data);
     }
 
-    @ApiOperation("获取用户列表")
+    @ApiOperation("获取用户管理列表")
     @SaCheckLogin
     @SaCheckRole(value = {SysConst.SUPER_ADMIN_ROLE_IDENTIFIER, SysConst.ADMIN_ROLE_IDENTIFIER}, mode = SaMode.OR)
-    @GetMapping("/getUserList")
-    public R getUserList() {
+    @GetMapping("/getUserManageList")
+    public R getUserManageList() {
         log.info("查询全部用户");
         List<User> userList = userService.listAllUsersNoSensitives();
 
         log.info("查询每个用户绑定的角色名称表");
-        List<Data> list = new ArrayList<>();
+        List<MapData> userManageList = new ArrayList<>();
         for (User user : userList) {
-//            List<String> roleNames = ;
-            Data item = new Data();
+            List<Role> roles = roleService.listRoles(user.getId());
+            MapData item = new MapData();
             item.put("user", user);
-//            item.put("roleNames", identifierList);
-            list.add(item);
+            item.put("roles", roles);
+            userManageList.add(item);
         }
 
-        Data data = new Data();
-        data.put("userList", list);
+        MapData data = new MapData();
+        data.put("userManageList", userManageList);
         return R.success(data);
     }
 }

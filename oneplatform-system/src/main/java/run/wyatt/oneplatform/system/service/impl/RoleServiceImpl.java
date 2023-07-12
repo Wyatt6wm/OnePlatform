@@ -63,7 +63,7 @@ public class RoleServiceImpl implements RoleService {
             throw new BusinessException("创建角色失败");
         }
 
-        updateRoleDbChangeTime();
+        setRoleDbChangeTime();
 
         log.info("成功创建角色: roleId={}", role.getId());
         return role;
@@ -87,7 +87,7 @@ public class RoleServiceImpl implements RoleService {
 
         // 有授权成功时，要更新标志，以动态更新用户权限缓存
         if (failList.size() < authIds.size()) {
-            authService.updateAuthDbChangeTime();
+            authService.setAuthDbChangeTime();
         }
 
         return failList;
@@ -111,7 +111,7 @@ public class RoleServiceImpl implements RoleService {
 
         // 有授权成功时，要更新标志，以动态更新用户权限缓存
         if (failList.size() < authIds.size()) {
-            authService.updateAuthDbChangeTime();
+            authService.setAuthDbChangeTime();
         }
 
         return failList;
@@ -133,7 +133,7 @@ public class RoleServiceImpl implements RoleService {
             throw new BusinessException("该角色数据不存在");
         }
 
-        updateRoleDbChangeTime();
+        setRoleDbChangeTime();
 
         log.info("成功删除角色记录");
     }
@@ -161,7 +161,7 @@ public class RoleServiceImpl implements RoleService {
             throw new BusinessException("该角色数据不存在");
         }
 
-        updateRoleDbChangeTime();
+        setRoleDbChangeTime();
 
         log.info("成功更新角色记录");
         role.setId(roleId);
@@ -169,7 +169,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public void updateRoleDbChangeTime() {
+    public void setRoleDbChangeTime() {
         Date now = new Date();
         redis.opsForValue().set(SysConst.ROLE_DB_CHANGE_TIME, now);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
@@ -261,6 +261,14 @@ public class RoleServiceImpl implements RoleService {
         }
 
         log.info("用户的角色标识列表: {}", roles);
+        return roles;
+    }
+
+    @Override
+    public List<Role> listRoles(Long userId) {
+        log.info("输入参数: userId={}", userId);
+        List<Role> roles = roleDao.findByUserId(userId);
+        log.info("用户 {} 的角色列表: {}", userId, roles);
         return roles;
     }
 

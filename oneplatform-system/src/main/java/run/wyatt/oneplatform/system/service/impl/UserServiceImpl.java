@@ -1,6 +1,5 @@
 package run.wyatt.oneplatform.system.service.impl;
 
-import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,23 +7,18 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
 import run.wyatt.oneplatform.common.exception.BusinessException;
-import run.wyatt.oneplatform.common.exception.DatabaseException;
 import run.wyatt.oneplatform.common.util.PasswordUtil;
 import run.wyatt.oneplatform.system.dao.AuthDao;
 import run.wyatt.oneplatform.system.dao.RoleDao;
 import run.wyatt.oneplatform.system.dao.UserDao;
 import run.wyatt.oneplatform.system.dao.UserRoleDao;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
-import run.wyatt.oneplatform.system.model.entity.Auth;
-import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.service.AuthService;
 import run.wyatt.oneplatform.system.service.RoleService;
 import run.wyatt.oneplatform.system.service.UserService;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -126,19 +120,18 @@ public class UserServiceImpl implements UserService {
         List<Long> failList = new ArrayList<>();
         for (Long roleId : roleIds) {
             try {
-                long rows = userRoleDao.insert(userId, roleId);
-                log.info("绑定成功: (userId={}, roleId={})", userId, roleId);
+                userRoleDao.insert(userId, roleId);
+                log.info("bind: (userId={}, roleId={})", userId, roleId);
             } catch (Exception e) {
                 failList.add(roleId);
             }
         }
         log.info("绑定失败的roleId：{}", failList);
 
-        // 有授权成功时，要更新标志，以动态更新用户角色、权限缓存
         if (failList.size() < roleIds.size()) {
-            // TODO
-            roleService.updateRoleDbChangeTime();
-            authService.updateAuthDbChangeTime();
+            log.info("有绑定成功，为用户标记须更新角色和权限标识符缓存");
+            roleService.setRefreshRoleRedisTrue(userId);
+            authService.setRefreshAuthRedisTrue(userId);
         }
 
         return failList;
@@ -152,19 +145,18 @@ public class UserServiceImpl implements UserService {
         List<Long> failList = new ArrayList<>();
         for (Long roleId : roleIds) {
             try {
-                long rows = userRoleDao.delete(userId, roleId);
-                log.info("解除绑定成功: (userId={}, roleId={})", userId, roleId);
+                userRoleDao.delete(userId, roleId);
+                log.info("unbind: (userId={}, roleId={})", userId, roleId);
             } catch (Exception e) {
                 failList.add(roleId);
             }
         }
         log.info("解除绑定失败的roleId：{}", failList);
 
-        // 有授权成功时，要更新标志，以动态更新用户角色、权限缓存
         if (failList.size() < roleIds.size()) {
-            // TODO
-            roleService.updateRoleDbChangeTime();
-            authService.updateAuthDbChangeTime();
+            log.info("有解除绑定成功，为用户标记须更新角色和权限标识符缓存");
+            roleService.setRefreshRoleRedisTrue(userId);
+            authService.setRefreshAuthRedisTrue(userId);
         }
 
         return failList;

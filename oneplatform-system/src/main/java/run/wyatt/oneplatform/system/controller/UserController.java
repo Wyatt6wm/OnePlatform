@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
 import run.wyatt.oneplatform.common.exception.BusinessException;
@@ -21,6 +22,7 @@ import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
+import run.wyatt.oneplatform.system.model.form.BindForm;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
 import run.wyatt.oneplatform.system.model.form.RegistryForm;
@@ -245,6 +247,48 @@ public class UserController {
 
         MapData data = new MapData();
         data.put("userManageList", userManageList);
+        return R.success(data);
+    }
+
+    @ApiOperation("获取用户所有角色")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @GetMapping("/getRolesOfUser")
+    public R getRolesOfUser(@RequestParam("id") Long roleId) {
+        log.info("请求参数: id={}", roleId);
+        try {
+            Assert.notNull(roleId, "请求参数为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new BusinessException("请求参数错误");
+        }
+
+        log.info("查询用户的全部角色");
+        List<Role> roles = roleService.listRoles(roleId);
+
+        MapData data = new MapData();
+        data.put("roles", roles);
+        return R.success(data);
+    }
+
+    @ApiOperation("变更角色绑定")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @PostMapping("/changeBinds")
+    public R changeBinds(@RequestBody BindForm bindForm) {
+        log.info("请求参数: {}", bindForm);
+        try {
+            Assert.notNull(bindForm, "请求参数为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new BusinessException("请求参数错误");
+        }
+
+        List<Long> failBind = userService.bind(bindForm.getUserId(), bindForm.getBindList());
+        List<Long> failUnbind = userService.unbind(bindForm.getUserId(), bindForm.getUnbindList());
+        MapData data = new MapData();
+        data.put("failBind", failBind);
+        data.put("failUnbind", failUnbind);
         return R.success(data);
     }
 }

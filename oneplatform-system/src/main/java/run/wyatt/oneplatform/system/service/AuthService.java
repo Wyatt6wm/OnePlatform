@@ -56,7 +56,7 @@ public interface AuthService {
      *
      * @return 权限列表
      */
-    List<Auth> listAllAuths();
+    List<Auth> listAuths();
 
     /**
      * 查询角色的所有权限

@@ -165,8 +165,8 @@ public class RoleController {
     @ApiOperation("获取角色所有权限")
     @SaCheckLogin
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
-    @GetMapping("/getAuthsOfUser")
-    public R getAuthsOfUser(@RequestParam("id") Long roleId) {
+    @GetMapping("/getAuthsOfRole")
+    public R getAuthsOfRole(@RequestParam("id") Long roleId) {
         log.info("请求参数: id={}", roleId);
         try {
             Assert.notNull(roleId, "请求参数为null");

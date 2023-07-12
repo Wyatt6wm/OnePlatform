@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.exception.BusinessException;
-import run.wyatt.oneplatform.common.http.Data;
 import run.wyatt.oneplatform.common.http.MapData;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;

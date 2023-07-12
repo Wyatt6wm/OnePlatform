@@ -143,7 +143,8 @@ public class AuthServiceImpl implements AuthService {
     private boolean noNeedRefreshAuthRedis(Long userId) {
         SaSession userSession = StpUtil.getSessionByLoginId(userId);
         if (userSession != null) {
-            return 0 == (int) userSession.get(SysConst.REFRESH_AUTH_REDIS);
+            Integer refreshAuthRedis = (Integer) userSession.get(SysConst.REFRESH_AUTH_REDIS);
+            return refreshAuthRedis == null || refreshAuthRedis == 0;
         }
         return true;
     }

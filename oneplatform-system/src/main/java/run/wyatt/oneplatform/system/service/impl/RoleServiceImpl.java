@@ -199,7 +199,8 @@ public class RoleServiceImpl implements RoleService {
     private boolean noNeedRefreshRoleRedis(Long userId) {
         SaSession userSession = StpUtil.getSessionByLoginId(userId);
         if (userSession != null) {
-            return 0 == (int) userSession.get(SysConst.REFRESH_ROLE_REDIS);
+            Integer refreshRoleRedis = (Integer) userSession.get(SysConst.REFRESH_ROLE_REDIS);
+            return refreshRoleRedis == null || refreshRoleRedis == 0;
         }
         return true;
     }

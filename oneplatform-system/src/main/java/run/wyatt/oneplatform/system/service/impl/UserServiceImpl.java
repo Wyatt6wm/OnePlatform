@@ -188,6 +188,25 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void changePassword(Long id, String password) {
+        log.info("输入参数: id={}", id);
+
+        String salt = PasswordUtil.generateSalt();
+        String encryptedPassword = PasswordUtil.encode(password, salt);
+        log.info("密码加密完成");
+
+        User user = new User();
+        user.setPassword(encryptedPassword);
+        user.setSalt(salt);
+
+        if (userDao.update(id, user) == 1) {
+            log.info("创建用户成功完成");
+        } else {
+            throw new BusinessException("修改密码失败");
+        }
+    }
+
     private void updateRedisProfile(User profile) {
         StpUtil.getSession().set(CommonConst.REDIS_PROFILE_KEY, profile);
         log.info("已更新缓存的profile信息: {}", profile);
@@ -199,6 +218,19 @@ public class UserServiceImpl implements UserService {
 
 
         User user = userDao.findByUsername(username);
+        if (user == null || !user.getPassword().equals(PasswordUtil.encode(password, user.getSalt()))) {
+            throw new BusinessException("用户名或密码错误");
+        }
+        log.info("用户名和密码通过验证");
+
+        return user;
+    }
+
+    @Override
+    public User verifyById(Long id, String password) {
+        log.info("输入参数: id={}, password=*", id);
+
+        User user = userDao.findById(id);
         if (user == null || !user.getPassword().equals(PasswordUtil.encode(password, user.getSalt()))) {
             throw new BusinessException("用户名或密码错误");
         }

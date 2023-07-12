@@ -23,6 +23,7 @@ import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.BindForm;
+import run.wyatt.oneplatform.system.model.form.ChangePasswordForm;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
 import run.wyatt.oneplatform.system.model.form.RegistryForm;
@@ -290,5 +291,54 @@ public class UserController {
         data.put("failBind", failBind);
         data.put("failUnbind", failUnbind);
         return R.success(data);
+    }
+
+    @ApiOperation("修改密码")
+    @SaCheckLogin
+    @PostMapping("/changePassword")
+    public R changePassword(@RequestBody ChangePasswordForm form) {
+        try {
+            Assert.notNull(form, "请求参数为null");
+            Assert.notNull(form.getUserId(), "用户ID为null");
+            Assert.notNull(form.getPassword(), "密码为null");
+            Assert.notNull(form.getNewPassword(), "新密码为null");
+            Assert.notNull(form.getCaptchaKey(), "验证码KEY为null");
+            Assert.notNull(form.getCaptchaInput(), "验证码为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new BusinessException("请求参数错误");
+        }
+
+        Long userId = form.getUserId();
+        String password = form.getPassword();
+        String newPassword = form.getNewPassword();
+        String captchaKey = form.getCaptchaKey();
+        String captchaInput = form.getCaptchaInput();
+        log.info("请求参数: userId={}, captchaKey={}, captchaInput={}", userId, captchaKey, captchaInput);
+
+        // 格式校验
+        if (userService.wrongPasswordFormat(password)) {
+            throw new BusinessException("密码格式错误");
+        }
+        if (userService.wrongPasswordFormat(newPassword)) {
+            throw new BusinessException("新密码格式错误");
+        }
+        if (commonService.wrongCaptchaFormat(captchaInput)) {
+            throw new BusinessException("验证码格式错误");
+        }
+        log.info("输入参数格式校验通过");
+
+        // 校验验证码
+        commonService.verifyCaptcha(captchaKey, captchaInput);
+
+        // 验证用户名密码
+        User user = userService.verifyById(userId, password);
+        user.setPassword(null);
+        user.setSalt(null);
+
+        // 修改密码
+        userService.changePassword(userId, newPassword);
+        
+        return R.success();
     }
 }

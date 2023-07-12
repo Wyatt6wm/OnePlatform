@@ -70,6 +70,14 @@ public interface UserService {
     User editProfile(Long userId, User profile);
 
     /**
+     * 修改密码
+     *
+     * @param id       用户ID
+     * @param password 新密码
+     */
+    void changePassword(Long id, String password);
+
+    /**
      * 根据用户名、密码进行认证
      *
      * @param username 用户名
@@ -77,6 +85,15 @@ public interface UserService {
      * @return 若认证成功则返回用户信息
      */
     User verifyByUsername(String username, String password);
+
+    /**
+     * 根据用户ID、密码进行认证
+     *
+     * @param id       用户ID
+     * @param password 密码
+     * @return 若认证成功则返回用户信息
+     */
+    User verifyById(Long id, String password);
 
     /**
      * 查询所有用户（脱敏）

@@ -13,23 +13,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.common.cosnt.CommonConst;
-import run.wyatt.oneplatform.common.http.Data;
+import run.wyatt.oneplatform.common.exception.BusinessException;
+import run.wyatt.oneplatform.common.http.MapData;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.model.entity.User;
+import run.wyatt.oneplatform.system.model.form.BindForm;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
 import run.wyatt.oneplatform.system.model.form.RegistryForm;
+import run.wyatt.oneplatform.system.service.AuthService;
 import run.wyatt.oneplatform.system.service.CommonService;
+import run.wyatt.oneplatform.system.service.RoleService;
 import run.wyatt.oneplatform.system.service.UserService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Wyatt
@@ -44,6 +47,10 @@ public class UserController {
     private CommonService commonService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private AuthService authService;
 
     @ApiOperation("注册用户")
     @PostMapping("/registry")
@@ -56,7 +63,7 @@ public class UserController {
             Assert.notNull(registryForm.getCaptchaInput(), "验证码为null");
         } catch (Exception e) {
             log.info(e.getMessage());
-            return R.fail("请求参数错误");
+            throw new BusinessException("请求参数错误");
         }
 
         String username = registryForm.getUsername();
@@ -66,36 +73,28 @@ public class UserController {
         log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
-        if (userService.invalidUsernameFormat(username)) {
-            return R.fail("用户名格式错误");
+        if (userService.wrongUsernameFormat(username)) {
+            throw new BusinessException("用户名格式错误");
         }
-        if (userService.invalidPasswordFormat(password)) {
-            return R.fail("密码格式错误");
+        if (userService.wrongPasswordFormat(password)) {
+            throw new BusinessException("密码格式错误");
         }
-        if (commonService.invalidCaptchaFormat(captchaInput)) {
-            return R.fail("验证码格式错误");
+        if (commonService.wrongCaptchaFormat(captchaInput)) {
+            throw new BusinessException("验证码格式错误");
         }
         log.info("输入参数格式校验通过");
 
         // 校验验证码
-        try {
-            commonService.checkCaptcha(captchaKey, captchaInput);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        commonService.verifyCaptcha(captchaKey, captchaInput);
 
         // 创建用户
-        try {
-            User user = userService.createUser(username, password);
-            user.setPassword(null);
-            user.setSalt(null);
+        User user = userService.createUser(username, password);
+        user.setPassword(null);
+        user.setSalt(null);
 
-            Data data = new Data();
-            data.put("user", user);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        MapData data = new MapData();
+        data.put("user", user);
+        return R.success(data);
     }
 
     @ApiOperation("登录认证")
@@ -109,7 +108,7 @@ public class UserController {
             Assert.notNull(loginForm.getCaptchaInput(), "验证码为null");
         } catch (Exception e) {
             log.info(e.getMessage());
-            return R.fail("请求参数错误");
+            throw new BusinessException("请求参数错误");
         }
 
         String username = loginForm.getUsername();
@@ -119,34 +118,24 @@ public class UserController {
         log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
-        if (userService.invalidUsernameFormat(username)) {
-            return R.fail("用户名格式错误");
+        if (userService.wrongUsernameFormat(username)) {
+            throw new BusinessException("用户名格式错误");
         }
-        if (userService.invalidPasswordFormat(password)) {
-            return R.fail("密码格式错误");
+        if (userService.wrongPasswordFormat(password)) {
+            throw new BusinessException("密码格式错误");
         }
-        if (commonService.invalidCaptchaFormat(captchaInput)) {
-            return R.fail("验证码格式错误");
+        if (commonService.wrongCaptchaFormat(captchaInput)) {
+            throw new BusinessException("验证码格式错误");
         }
         log.info("输入参数格式校验通过");
 
         // 校验验证码
-        try {
-            commonService.checkCaptcha(captchaKey, captchaInput);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        commonService.verifyCaptcha(captchaKey, captchaInput);
 
         // 验证用户名密码
-        User user = null;
-        try {
-            user = userService.verifyByUsername(username, password);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        User user = userService.verifyByUsername(username, password);
         user.setPassword(null);
         user.setSalt(null);
-        log.info("user={}", user);
 
         // 登录：Sa-Token框架自动生成token、获取角色和权限，并缓存到Redis
         StpUtil.login(user.getId());
@@ -157,25 +146,18 @@ public class UserController {
         log.info("成功保存用户详细信息到Session缓存");
 
         // 获取用户角色和权限并缓存到Redis
-        List<String> roles = null;
-        List<String> auths = null;
-        try {
-            roles = userService.getRoleIdentifiersOfUser(user.getId());
-            auths = userService.getAuthIdentifiersOfUser(user.getId());
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        List<String> roles = roleService.getActivatedRoleIdentifiers(user.getId());
+        List<String> auths = authService.getActivatedAuthIdentifiers(user.getId());
         StpUtil.getSession().set(CommonConst.REDIS_ROLES_KEY, roles);
         StpUtil.getSession().set(CommonConst.REDIS_AUTHS_KEY, auths);
         log.info("成功保存角色、权限到Session缓存");
 
         // 组装响应数据
-        Map<String, Object> data = new HashMap<>();
+        MapData data = new MapData();
         data.put("token", StpUtil.getTokenInfo().getTokenValue());
         data.put("tokenExpiredTime", System.currentTimeMillis() + StpUtil.getTokenActivityTimeout() * 1000);
         data.put("roles", roles);
         data.put("auths", auths);
-
         return R.success(data);
     }
 
@@ -188,39 +170,31 @@ public class UserController {
 
     @ApiOperation("查询用户角色标识")
     @SaCheckLogin
-    @GetMapping("/getRolesOfUser")
-    public R getRolesOfUser() {
+    @GetMapping("/getRoleIdentifiers")
+    public R getRoleIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
-        try {
-            List<String> roles = userService.getRoleIdentifiersOfUser(userId);
-            Data data = new Data();
-            data.put("roles", roles);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        List<String> roles = roleService.getActivatedRoleIdentifiers(userId);
+        MapData data = new MapData();
+        data.put("roles", roles);
+        return R.success(data);
     }
 
     @ApiOperation("查询用户权限标识")
     @SaCheckLogin
-    @GetMapping("/getAuthsOfUser")
-    public R getAuthsOfUser() {
+    @GetMapping("/getAuthIdentifiers")
+    public R getAuthIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
-        try {
-            List<String> auths = userService.getAuthIdentifiersOfUser(userId);
-            Data data = new Data();
-            data.put("auths", auths);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        List<String> auths = authService.getActivatedAuthIdentifiers(userId);
+        MapData data = new MapData();
+        data.put("auths", auths);
+        return R.success(data);
     }
 
-    @ApiOperation("获取用户详细信息")
+    @ApiOperation("获取用户信息")
     @SaCheckLogin
     @GetMapping("/getProfile")
     public R getProfile() {
-        Data data = new Data();
+        MapData data = new MapData();
         data.put("profile", StpUtil.getSession().get(CommonConst.REDIS_PROFILE_KEY));
         log.info("获取用户详细信息成功");
         return R.success(data);
@@ -235,48 +209,86 @@ public class UserController {
             Assert.notNull(profileForm, "请求参数为null");
         } catch (Exception e) {
             log.info(e.getMessage());
-            return R.fail("请求参数错误");
+            throw new BusinessException("请求参数错误");
         }
 
         Long userId = StpUtil.getLoginIdAsLong();
+        String nickname = profileForm.getNickname();
+        String motto = profileForm.getMotto();
 
-        User user = new User();
-        user.setNickname(profileForm.getNickname().isEmpty() ? null : profileForm.getNickname());
-        user.setMotto(profileForm.getMotto().isEmpty() ? null : profileForm.getMotto());
-        try {
-            User result = userService.editProfile(userId, user);
-            Data data = new Data();
-            data.put("profile", result);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        User profile = new User();
+        profile.setNickname((nickname == null || nickname.isBlank()) ? null : nickname);
+        profile.setMotto((motto == null || motto.isBlank()) ? null : motto);
+
+        User newProfile = userService.editProfile(userId, profile);
+
+        MapData data = new MapData();
+        data.put("profile", newProfile);
+        return R.success(data);
     }
 
-    @ApiOperation("获取用户列表")
+    @ApiOperation("获取用户管理列表")
     @SaCheckLogin
     @SaCheckRole(value = {SysConst.SUPER_ADMIN_ROLE_IDENTIFIER, SysConst.ADMIN_ROLE_IDENTIFIER}, mode = SaMode.OR)
-    @GetMapping("/getUserList")
-    public R getUserList() {
-        try {
-            log.info("查询全部用户");
-            List<User> userList = userService.listAllUsersDesensitized();
+    @GetMapping("/getUserManageList")
+    public R getUserManageList() {
+        log.info("查询全部用户");
+        List<User> userList = userService.listAllUsersNoSensitives();
 
-            log.info("查询每个用户绑定的权限名称列表");
-            List<Data> list = new ArrayList<>();
-            for (User user : userList) {
-                List<String> identifierList = userService.getRoleIdentifiersOfUser(user.getId());
-                Data item = new Data();
-                item.put("user", user);
-                item.put("roleNames", identifierList);
-                list.add(item);
-            }
-
-            Data data = new Data();
-            data.put("userList", list);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
+        log.info("查询每个用户绑定的角色名称表");
+        List<MapData> userManageList = new ArrayList<>();
+        for (User user : userList) {
+            List<Role> roles = roleService.listRoles(user.getId());
+            MapData item = new MapData();
+            item.put("user", user);
+            item.put("roles", roles);
+            userManageList.add(item);
         }
+
+        MapData data = new MapData();
+        data.put("userManageList", userManageList);
+        return R.success(data);
+    }
+
+    @ApiOperation("获取用户所有角色")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @GetMapping("/getRolesOfUser")
+    public R getRolesOfUser(@RequestParam("id") Long roleId) {
+        log.info("请求参数: id={}", roleId);
+        try {
+            Assert.notNull(roleId, "请求参数为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new BusinessException("请求参数错误");
+        }
+
+        log.info("查询用户的全部角色");
+        List<Role> roles = roleService.listRoles(roleId);
+
+        MapData data = new MapData();
+        data.put("roles", roles);
+        return R.success(data);
+    }
+
+    @ApiOperation("变更角色绑定")
+    @SaCheckLogin
+    @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
+    @PostMapping("/changeBinds")
+    public R changeBinds(@RequestBody BindForm bindForm) {
+        log.info("请求参数: {}", bindForm);
+        try {
+            Assert.notNull(bindForm, "请求参数为null");
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            throw new BusinessException("请求参数错误");
+        }
+
+        List<Long> failBind = userService.bind(bindForm.getUserId(), bindForm.getBindList());
+        List<Long> failUnbind = userService.unbind(bindForm.getUserId(), bindForm.getUnbindList());
+        MapData data = new MapData();
+        data.put("failBind", failBind);
+        data.put("failUnbind", failUnbind);
+        return R.success(data);
     }
 }

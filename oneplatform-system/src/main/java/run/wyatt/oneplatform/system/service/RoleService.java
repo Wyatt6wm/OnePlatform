@@ -1,8 +1,6 @@
 package run.wyatt.oneplatform.system.service;
 
-import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
-import run.wyatt.oneplatform.system.model.form.GrantForm;
 
 import java.util.List;
 
@@ -35,7 +33,7 @@ public interface RoleService {
      * @param authIds 该角色要解除绑定的权限ID列表
      * @return 解除授权失败的权限ID列表
      */
-    List<Long> disgrant(Long roleId, List<Long> authIds);
+    List<Long> ungrant(Long roleId, List<Long> authIds);
 
     /**
      * 删除角色记录
@@ -57,20 +55,32 @@ public interface RoleService {
      * 数据库角色表变更时间更新到Redis
      * 角色本身及用户绑定角色的关系发生变化时都应调用
      */
-    void updateRoleDbChanged();
+    void updateRoleDbChangeTime();
+
+    void setRefreshRoleRedisTrue(Long userId);
+
+    void setRefreshRoleRedisFalse(Long userId);
+
+    /**
+     * 查询用户所有正在生效的角色标识
+     *
+     * @param userId 用户ID
+     * @return 角色标识符列表
+     */
+    List<String> getActivatedRoleIdentifiers(Long userId);
 
     /**
      * 查询所有角色
      *
      * @return 角色列表
      */
-    List<Role> listAllRoles();
+    List<Role> listRoles();
 
     /**
-     * 查询角色的所有权限
+     * 查询用户所有角色
      *
-     * @param roleId 角色ID
-     * @return 权限列表
+     * @param userId 用户ID
+     * @return 角色列表
      */
-    List<Auth> listRoleAuths(Long roleId);
+    List<Role> listRoles(Long userId);
 }

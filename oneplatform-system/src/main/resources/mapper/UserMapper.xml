@@ -29,8 +29,12 @@
         update tb_sys_user set
         <trim suffixOverrides="," suffix="">
             id=id,
+            <if test="record.username != null">username=#{record.username},</if>
+            <if test="record.password != null">password=#{record.password},</if>
+            <if test="record.salt != null">salt=#{record.salt},</if>
             <if test="record.nickname != null">nickname=#{record.nickname},</if>
             <if test="record.motto != null">motto=#{record.motto},</if>
+            <if test="record.avatar != null">avatar=#{record.avatar},</if>
         </trim>
         where id=#{userId}
     </update>

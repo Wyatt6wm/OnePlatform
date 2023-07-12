@@ -21,5 +21,5 @@ public interface RoleDao {
 
     List<Role> findByUserId(Long userId);
 
-    List<Role> findValidByUserId(Long userId);  // 要求角色activated
+    List<Role> findActivatedByUserId(Long userId);  // 要求角色activated
 }

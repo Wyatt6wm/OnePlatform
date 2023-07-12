@@ -15,7 +15,7 @@ public interface UserService {
      * @param username 输入的用户名
      * @return true 格式不正确 / false 格式正确
      */
-    boolean invalidUsernameFormat(String username);
+    boolean wrongUsernameFormat(String username);
 
     /**
      * 检查密码输入格式是否不正确
@@ -23,7 +23,7 @@ public interface UserService {
      * @param password 输入的密码
      * @return true 格式不正确 / false 格式正确
      */
-    boolean invalidPasswordFormat(String password);
+    boolean wrongPasswordFormat(String password);
 
     /**
      * 创建用户
@@ -33,6 +33,14 @@ public interface UserService {
      * @return 用户对象
      */
     User createUser(String username, String password);
+
+    /**
+     * 为用户绑定单个角色
+     *
+     * @param userId 用户ID
+     * @param roleId 待绑定的角色ID
+     */
+    void bind(Long userId, Long roleId);
 
     /**
      * 为用户绑定多个角色
@@ -62,34 +70,18 @@ public interface UserService {
     User editProfile(Long userId, User profile);
 
     /**
-     * 根据用户名查询数据库并校验用户名密码
+     * 根据用户名、密码进行认证
      *
      * @param username 用户名
-     * @param password 名（明文）
+     * @param password 密码（明文）
      * @return 若认证成功则返回用户信息
      */
     User verifyByUsername(String username, String password);
-
-    /**
-     * 获取用户所属的所有角色标识符列表
-     *
-     * @param userId 用户ID
-     * @return 角色标识符列表
-     */
-    List<String> getRoleIdentifiersOfUser(Long userId);
-
-    /**
-     * 获取用户所拥有的权限标识符列表
-     *
-     * @param userId 用户ID
-     * @return 权限标识符列表
-     */
-    List<String> getAuthIdentifiersOfUser(Long userId);
 
     /**
      * 查询所有用户（脱敏）
      *
      * @return 用户列表
      */
-    List<User> listAllUsersDesensitized();
+    List<User> listAllUsersNoSensitives();
 }

@@ -4,6 +4,7 @@ import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import com.alibaba.fastjson2.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -11,11 +12,11 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
-import run.wyatt.oneplatform.common.http.Data;
+import run.wyatt.oneplatform.common.exception.BusinessException;
+import run.wyatt.oneplatform.common.exception.DatabaseException;
+import run.wyatt.oneplatform.common.http.MapData;
 import run.wyatt.oneplatform.common.http.R;
 
 /**
@@ -24,11 +25,10 @@ import run.wyatt.oneplatform.common.http.R;
  * @author Wyatt
  * @date 2023/7/5 15:56
  */
+@Slf4j
 @Aspect
 @Component
 public class ApiAspect {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());    // Slf4j
-
     /**
      * API切面
      */
@@ -52,23 +52,24 @@ public class ApiAspect {
             log.info("=== EXIT CONTROLLER {}() WITH {} ===", joinPoint.getSignature().getName(), ((R) apiResult).getSucc() ? "SUCCESS" : "FAIL");
             return apiResult;
         } catch (Throwable e) { // 当API抛出异常时，封装成失败的响应信息
-            int code = 500;
-            String mesg = "服务器内部错误";
+            R r = R.fail();
 
-            // 未登录
-            if (e instanceof NotLoginException) {
-                code = 401;
-                mesg = "未登录";
-            }
-            // 鉴权失败
-            if (e instanceof NotRoleException || e instanceof NotPermissionException) {
-                code = 503;
-                mesg = "服务不可用";
+            if (e instanceof BusinessException || e instanceof DatabaseException) {
+                r.setMesg(e.getMessage());
+            } else if (e instanceof NotLoginException) {   // 未登录
+                r.setMesg("未登录");
+                MapData data = new MapData("code", 401);
+                r.setData(data);
+            } else if (e instanceof NotRoleException || e instanceof NotPermissionException) { // 鉴权失败
+                r.setMesg("服务不可用");
+                MapData data = new MapData("code", 503);
+                r.setData(data);
+            } else {
+                r.setMesg("服务器内部错误");
+                MapData data = new MapData("code", 500);
+                r.setData(data);
             }
 
-            Data data = new Data();
-            data.put("code", code);
-            R r = R.fail(mesg, data);
             r.setTraceId(MDC.get("RID"));
             log.info("响应: {}", JSONObject.toJSONString(r)); // 注意响应数据很庞大的情况
             log.info("=== EXIT CONTROLLER {}() WITH FAIL ===", joinPoint.getSignature().getName());
@@ -77,7 +78,7 @@ public class ApiAspect {
     }
 
     /**
-     * Advice: 为API的响应数据装配上traceId
+     * Advice: 为API的响应数据装配traceId，并打印日志
      *
      * @param joinPoint 切点
      * @param r         主方法的返回

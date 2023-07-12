@@ -79,25 +79,9 @@ public interface UserService {
     User verifyByUsername(String username, String password);
 
     /**
-     * 获取用户所属的所有角色标识符列表
-     *
-     * @param userId 用户ID
-     * @return 角色标识符列表
-     */
-    List<String> getRoleIdentifiers(Long userId);
-
-    /**
-     * 获取用户所拥有的权限标识符列表
-     *
-     * @param userId 用户ID
-     * @return 权限标识符列表
-     */
-    List<String> getAuthIdentifiers(Long userId);
-
-    /**
      * 查询所有用户（脱敏）
      *
      * @return 用户列表
      */
-    List<User> listAllUsersDesensitized();
+    List<User> listAllUsersNoSensitives();
 }

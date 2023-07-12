@@ -24,7 +24,9 @@ import run.wyatt.oneplatform.system.model.entity.User;
 import run.wyatt.oneplatform.system.model.form.LoginForm;
 import run.wyatt.oneplatform.system.model.form.ProfileForm;
 import run.wyatt.oneplatform.system.model.form.RegistryForm;
+import run.wyatt.oneplatform.system.service.AuthService;
 import run.wyatt.oneplatform.system.service.CommonService;
+import run.wyatt.oneplatform.system.service.RoleService;
 import run.wyatt.oneplatform.system.service.UserService;
 
 import java.util.ArrayList;
@@ -43,6 +45,10 @@ public class UserController {
     private CommonService commonService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private AuthService authService;
 
     @ApiOperation("注册用户")
     @PostMapping("/registry")
@@ -138,8 +144,8 @@ public class UserController {
         log.info("成功保存用户详细信息到Session缓存");
 
         // 获取用户角色和权限并缓存到Redis
-        List<String> roles = userService.getRoleIdentifiers(user.getId());
-        List<String> auths = userService.getAuthIdentifiers(user.getId());
+        List<String> roles = roleService.getActivatedRoleIdentifiers(user.getId());
+        List<String> auths = authService.getActivatedAuthIdentifiers(user.getId());
         StpUtil.getSession().set(CommonConst.REDIS_ROLES_KEY, roles);
         StpUtil.getSession().set(CommonConst.REDIS_AUTHS_KEY, auths);
         log.info("成功保存角色、权限到Session缓存");
@@ -165,7 +171,7 @@ public class UserController {
     @GetMapping("/getRoleIdentifiers")
     public R getRoleIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
-        List<String> roles = userService.getRoleIdentifiers(userId);
+        List<String> roles = roleService.getActivatedRoleIdentifiers(userId);
         MapData data = new MapData();
         data.put("roles", roles);
         return R.success(data);
@@ -176,7 +182,7 @@ public class UserController {
     @GetMapping("/getAuthIdentifiers")
     public R getAuthIdentifiers() {
         Long userId = StpUtil.getLoginIdAsLong();
-        List<String> auths = userService.getAuthIdentifiers(userId);
+        List<String> auths = authService.getActivatedAuthIdentifiers(userId);
         MapData data = new MapData();
         data.put("auths", auths);
         return R.success(data);
@@ -224,25 +230,21 @@ public class UserController {
     @SaCheckRole(value = {SysConst.SUPER_ADMIN_ROLE_IDENTIFIER, SysConst.ADMIN_ROLE_IDENTIFIER}, mode = SaMode.OR)
     @GetMapping("/getUserList")
     public R getUserList() {
-        try {
-            log.info("查询全部用户");
-            List<User> userList = userService.listAllUsersDesensitized();
+        log.info("查询全部用户");
+        List<User> userList = userService.listAllUsersNoSensitives();
 
-            log.info("查询每个用户绑定的权限名称列表");
-            List<Data> list = new ArrayList<>();
-            for (User user : userList) {
-                List<String> identifierList = userService.getRoleIdentifiers(user.getId());
-                Data item = new Data();
-                item.put("user", user);
-                item.put("roleNames", identifierList);
-                list.add(item);
-            }
-
-            Data data = new Data();
-            data.put("userList", list);
-            return R.success(data);
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
+        log.info("查询每个用户绑定的角色名称表");
+        List<Data> list = new ArrayList<>();
+        for (User user : userList) {
+//            List<String> roleNames = ;
+            Data item = new Data();
+            item.put("user", user);
+//            item.put("roleNames", identifierList);
+            list.add(item);
         }
+
+        Data data = new Data();
+        data.put("userList", list);
+        return R.success(data);
     }
 }

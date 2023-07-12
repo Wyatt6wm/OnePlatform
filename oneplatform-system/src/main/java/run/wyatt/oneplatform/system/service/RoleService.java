@@ -2,7 +2,6 @@ package run.wyatt.oneplatform.system.service;
 
 import run.wyatt.oneplatform.system.model.entity.Auth;
 import run.wyatt.oneplatform.system.model.entity.Role;
-import run.wyatt.oneplatform.system.model.form.GrantForm;
 
 import java.util.List;
 
@@ -57,7 +56,19 @@ public interface RoleService {
      * 数据库角色表变更时间更新到Redis
      * 角色本身及用户绑定角色的关系发生变化时都应调用
      */
-    void updateRoleDbChanged();
+    void updateRoleDbChangeTime();
+
+    void setRefreshRoleRedisTrue(Long userId);
+
+    void setRefreshRoleRedisFalse(Long userId);
+
+    /**
+     * 查询用户所有正在生效的角色标识
+     *
+     * @param userId 用户ID
+     * @return 角色标识符列表
+     */
+    List<String> getActivatedRoleIdentifiers(Long userId);
 
     /**
      * 查询所有角色

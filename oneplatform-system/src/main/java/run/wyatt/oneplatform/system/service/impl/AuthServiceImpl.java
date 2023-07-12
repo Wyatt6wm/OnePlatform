@@ -177,7 +177,7 @@ public class AuthServiceImpl implements AuthService {
             StpUtil.getSession().set(CommonConst.REDIS_AUTHS_KEY, auths);
             log.info("已更新缓存");
             updateAuthRedisChangeTime();
-            setRefreshAuthRedisTrue(userId);
+            setRefreshAuthRedisFalse(userId);
         }
 
         log.info("用户的权限标识列表: {}", auths);

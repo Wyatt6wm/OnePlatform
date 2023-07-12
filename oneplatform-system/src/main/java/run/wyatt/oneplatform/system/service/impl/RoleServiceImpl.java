@@ -238,7 +238,7 @@ public class RoleServiceImpl implements RoleService {
             StpUtil.getSession().set(CommonConst.REDIS_ROLES_KEY, roles);
             log.info("已更新缓存");
             updateRoleRedisChangeTime();
-            setRefreshRoleRedis(userId, 0);
+            setRefreshRoleRedisFalse(userId);
         }
 
         log.info("用户的角色标识列表: {}", roles);

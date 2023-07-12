@@ -175,37 +175,18 @@ public class UserServiceImpl implements UserService {
         String nickname = profile.getNickname();
 
         if (nickname != null && !nickname.isEmpty()) {
-            User user;
-            try {
-                user = userDao.findByNickname(profile.getNickname());
-            } catch (Exception e) {
-                log.info(e.getMessage());
-                throw new DatabaseException();
-            }
-            if (user != null) {
+            if (userDao.findByNickname(profile.getNickname()) != null) {
                 throw new BusinessException("昵称已被占用");
             }
         }
 
-        long rows;
-        try {
-            rows = userDao.update(userId, profile);
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new DatabaseException();
-        }
-
-        if (rows == 1) {
+        if (userDao.update(userId, profile) == 1) {
             log.info("成功修改用户信息");
 
-            User user = null;
-            try {
-                user = userDao.findById(userId);
-            } catch (Exception e) {
-                log.info(e.getMessage());
-                throw new DatabaseException();
-            }
-            updateProfileRedis(user);
+            profile = userDao.findById(userId);
+            profile.setPassword(null);
+            profile.setSalt(null);
+            updateRedisProfile(profile);
 
             return profile;
         } else {
@@ -227,7 +208,7 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    private void updateProfileRedis(User profile) {
+    private void updateRedisProfile(User profile) {
         StpUtil.getSession().set(CommonConst.REDIS_PROFILE_KEY, profile);
         log.info("已更新缓存的profile信息: {}", profile);
     }

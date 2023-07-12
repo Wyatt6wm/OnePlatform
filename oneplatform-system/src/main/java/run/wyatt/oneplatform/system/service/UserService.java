@@ -36,6 +36,7 @@ public interface UserService {
 
     /**
      * 为用户绑定单个角色
+     *
      * @param userId 用户ID
      * @param roleId 待绑定的角色ID
      */
@@ -72,7 +73,7 @@ public interface UserService {
      * 根据用户名、密码进行认证
      *
      * @param username 用户名
-     * @param password 名（明文）
+     * @param password 密码（明文）
      * @return 若认证成功则返回用户信息
      */
     User verifyByUsername(String username, String password);

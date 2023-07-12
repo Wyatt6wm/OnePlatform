@@ -212,11 +212,10 @@ public class UserController {
         profile.setNickname((nickname == null || nickname.isBlank()) ? null : nickname);
         profile.setMotto((motto == null || motto.isBlank()) ? null : motto);
 
-        // TODO
-        User result = userService.editProfile(userId, profile);
+        User newProfile = userService.editProfile(userId, profile);
 
         MapData data = new MapData();
-        data.put("profile", result);
+        data.put("profile", newProfile);
         return R.success(data);
     }
 

@@ -5,6 +5,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import run.wyatt.oneplatform.common.exception.DatabaseException;
 
@@ -32,6 +33,12 @@ public class DaoAspect {
      */
     @AfterThrowing(pointcut = "daoPointcut()", throwing = "e")
     public void daoAfterThrowingLogAdvice(JoinPoint joinPoint, Exception e) {
+        // 根据数据库异常类型推断业务异常信息的异常，拦截抛出
+        if (e instanceof DuplicateKeyException) {
+            return;
+        }
+
+        // 其他数据库异常类型打印日志，抛出数据库异常
         log.info("----------");
         log.info("数据库抛出异常详细信息: {}", e.getMessage());
         log.info("----------");

@@ -12,5 +12,5 @@ import java.util.List;
 public class GrantForm {
     private Long roleId;
     private List<Long> grantList;
-    private List<Long> disgrantList;
+    private List<Long> ungrantList;
 }

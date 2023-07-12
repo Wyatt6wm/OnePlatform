@@ -13,6 +13,7 @@ import run.wyatt.oneplatform.common.exception.DatabaseException;
 import run.wyatt.oneplatform.system.dao.AuthDao;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
 import run.wyatt.oneplatform.system.model.entity.Auth;
+import run.wyatt.oneplatform.system.model.entity.Role;
 import run.wyatt.oneplatform.system.service.AuthService;
 
 import java.text.SimpleDateFormat;
@@ -52,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("创建权限失败");
         }
 
-        setAuthDbChangeTime();
+        updateAuthDbChangeTime();
 
         log.info("成功创建权限: authId={}", auth.getId());
         return auth;
@@ -74,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("该权限数据不存在");
         }
 
-        setAuthDbChangeTime();
+        updateAuthDbChangeTime();
 
         log.info("成功删除权限记录");
     }
@@ -102,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("该权限数据不存在");
         }
 
-        setAuthDbChangeTime();
+        updateAuthDbChangeTime();
 
         log.info("成功更新权限记录");
         auth.setId(authId);
@@ -110,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void setAuthDbChangeTime() {
+    public void updateAuthDbChangeTime() {
         Date now = new Date();
         redis.opsForValue().set(SysConst.AUTH_DB_CHANGE_TIME, now);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
@@ -211,5 +212,13 @@ public class AuthServiceImpl implements AuthService {
             log.info(e.getMessage());
             throw new DatabaseException();
         }
+    }
+
+    @Override
+    public List<Auth> listAuths(Long roleId) {
+        log.info("输入参数: roleId={}", roleId);
+        List<Auth> auths = authDao.findByRoleId(roleId);
+        log.info("角色 {} 的权限列表: {}", roleId, auths);
+        return auths;
     }
 }

@@ -37,7 +37,7 @@ public interface AuthService {
      * 数据库权限表变更时间更新到Redis
      * 权限本身及角色绑定权限的关系发生变化时都应调用
      */
-    void setAuthDbChangeTime();
+    void updateAuthDbChangeTime();
 
     void setRefreshAuthRedisTrue(Long userId);
 
@@ -57,4 +57,12 @@ public interface AuthService {
      * @return 权限列表
      */
     List<Auth> listAllAuths();
+
+    /**
+     * 查询角色的所有权限
+     *
+     * @param roleId 角色ID
+     * @return 权限列表
+     */
+    List<Auth> listAuths(Long roleId);
 }

@@ -136,6 +136,7 @@ public class UserServiceImpl implements UserService {
 
         // 有授权成功时，要更新标志，以动态更新用户角色、权限缓存
         if (failList.size() < roleIds.size()) {
+            // TODO
             roleService.updateRoleDbChangeTime();
             authService.updateAuthDbChangeTime();
         }
@@ -161,6 +162,7 @@ public class UserServiceImpl implements UserService {
 
         // 有授权成功时，要更新标志，以动态更新用户角色、权限缓存
         if (failList.size() < roleIds.size()) {
+            // TODO
             roleService.updateRoleDbChangeTime();
             authService.updateAuthDbChangeTime();
         }
@@ -194,6 +196,11 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private void updateRedisProfile(User profile) {
+        StpUtil.getSession().set(CommonConst.REDIS_PROFILE_KEY, profile);
+        log.info("已更新缓存的profile信息: {}", profile);
+    }
+
     @Override
     public User verifyByUsername(String username, String password) {
         log.info("输入参数: username={}, password=*", username);
@@ -206,11 +213,6 @@ public class UserServiceImpl implements UserService {
         log.info("用户名和密码通过验证");
 
         return user;
-    }
-
-    private void updateRedisProfile(User profile) {
-        StpUtil.getSession().set(CommonConst.REDIS_PROFILE_KEY, profile);
-        log.info("已更新缓存的profile信息: {}", profile);
     }
 
     @Override

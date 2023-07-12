@@ -37,10 +37,9 @@
     <select id="findAll" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
         select * from tb_sys_auth
     </select>
-    <select id="findByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
+    <select id="findByRoleId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
         select distinct A.id, A.identifier, A.name, A.description, A.activated
-        from (select * from tb_sys_user_role where user_id=#{userId}) UR
-        inner join tb_sys_role_auth RA on UR.role_id=RA.role_id
+        from (select * from tb_sys_role_auth where role_id=#{roleId}) RA
         inner join tb_sys_auth A on RA.auth_id=A.id
     </select>
     <select id="findActivatedByUserId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
@@ -49,10 +48,5 @@
         inner join tb_sys_role R on UR.role_id=R.id and R.activated=1
         inner join tb_sys_role_auth RA on UR.role_id=RA.role_id
         inner join tb_sys_auth A on RA.auth_id=A.id and A.activated=1
-    </select>
-    <select id="findByRoleId" resultType="run.wyatt.oneplatform.system.model.entity.Auth">
-        select distinct A.id, A.identifier, A.name, A.description, A.activated
-        from (select * from tb_sys_role_auth where role_id=#{roleId}) RA
-        inner join tb_sys_auth A on RA.auth_id=A.id
     </select>
 </mapper>

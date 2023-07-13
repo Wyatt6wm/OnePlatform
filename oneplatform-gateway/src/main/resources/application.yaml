@@ -16,6 +16,10 @@ spring:
           uri: http://${sys.op-system.domain}
           predicates:
             - Path=/api/sys/**
+        - id: OnePlatformFinance
+          uri: http://${sys.op-finance.domain}
+          predicates:
+            - Path=/api/finance/**
     # 服务注册
     consul:
       host: ${sys.op-registry.host}

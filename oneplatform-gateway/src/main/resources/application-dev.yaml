@@ -11,3 +11,7 @@ sys:
     host: localhost
     port: 8002
     domain: ${sys.op-system.host}:${sys.op-system.port}
+  op-finance:
+    host: localhost
+    port: 8003
+    domain: ${sys.op-finance.host}:${sys.op-finance.port}

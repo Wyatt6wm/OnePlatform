@@ -27,7 +27,7 @@ public class LogFilter extends OncePerRequestFilter implements Filter {
             MDC.put("RID", rid);
             // 不记录监控中心的探活请求
             String url = request.getRequestURL().toString();
-            if (url.matches("^.*/api/sys.*$")) {
+            if (url.matches("^.*/api/todo.*$")) {
                 log.info(">>>>> 开始处理请求: {} {}", request.getMethod(), request.getRequestURL());
             }
             chain.doFilter(request, response);

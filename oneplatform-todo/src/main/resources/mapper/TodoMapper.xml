@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="run.wyatt.oneplatform.todo.dao.TodoDao">
+    <insert id="insert" parameterType="run.wyatt.oneplatform.todo.model.entity.Todo" useGeneratedKeys="true"
+            keyColumn="id" keyProperty="id">
+        insert into tb_todo_item (
+        <trim suffixOverrides="," suffix="">
+            <if test="tenant != null">tenant,</if>
+            <if test="category != null">category,</if>
+            <if test="name != null">name,</if>
+            <if test="detail != null">detail,</if>
+            <if test="emergency != null">emergency,</if>
+            <if test="importance != null">importance,</if>
+            <if test="workload != null">workload,</if>
+            <if test="workloadHour != null">workload_hour,</if>
+            <if test="workloadDay != null">workload_day,</if>
+            <if test="deadline != null">deadline,</if>
+            <if test="submitTime != null">submit_time,</if>
+            <if test="beginTime != null">begin_time,</if>
+            <if test="finishTime != null">finish_time,</if>
+            <if test="status != null">status,</if>
+            <if test="conclusion != null">conclusion,</if>
+            <if test="lastLogId != null">last_log_id,</if>
+        </trim>
+        ) values (
+        <trim suffixOverrides="," suffix="">
+            <if test="tenant != null">#{tenant},</if>
+            <if test="category != null">#{category},</if>
+            <if test="name != null">#{name},</if>
+            <if test="detail != null">#{detail},</if>
+            <if test="emergency != null">#{emergency},</if>
+            <if test="importance != null">#{importance},</if>
+            <if test="workload != null">#{workload},</if>
+            <if test="workloadHour != null">#{workloadHour},</if>
+            <if test="workloadDay != null">#{workloadDay},</if>
+            <if test="deadline != null">#{deadline},</if>
+            <if test="submitTime != null">#{submitTime},</if>
+            <if test="beginTime != null">#{beginTime},</if>
+            <if test="finishTime != null">#{finishTime},</if>
+            <if test="status != null">#{status},</if>
+            <if test="conclusion != null">#{conclusion},</if>
+            <if test="lastLogId != null">#{lastLogId},</if>
+        </trim>
+        )
+    </insert>
+    <delete id="delete">
+        delete from tb_todo_item where tenant=#{tenant} and id=#{id}
+    </delete>
+    <update id="update">
+        update tb_todo_item set
+        <trim suffixOverrides="," suffix="">
+            id=id,
+            <if test="record.category != null">category=#{record.category},</if>
+            <if test="record.name != null">name=#{record.name},</if>
+            <if test="record.detail != null">detail=#{record.detail},</if>
+            <if test="record.emergency != null">emergency=#{record.emergency},</if>
+            <if test="record.importance != null">importance=#{record.importance},</if>
+            <if test="record.workload != null">workload=#{record.workload},</if>
+            <if test="record.workloadHour != null">workload_hour=#{record.workloadHour},</if>
+            <if test="record.workloadDay != null">workload_day=#{record.workloadDay},</if>
+            <if test="record.deadline != null">deadline=#{record.deadline},</if>
+            <if test="record.submitTime != null">submit_time=#{record.submitTime},</if>
+            <if test="record.beginTime != null">begin_time=#{record.beginTime},</if>
+            <if test="record.finishTime != null">finish_time=#{record.finishTime},</if>
+            <if test="record.status != null">status=#{record.status},</if>
+            <if test="record.conclusion != null">conclusion=#{record.conclusion},</if>
+            <if test="record.lastLogId != null">last_log_id=#{record.lastLogId},</if>
+        </trim>
+        where tenant=#{tenant} and id=#{id}
+    </update>
+    <select id="findById" resultType="run.wyatt.oneplatform.todo.model.entity.Todo">
+        select * from tb_todo_item where tenant=#{tenant} and id=#{id}
+    </select>
+    <select id="findByCategory" resultType="run.wyatt.oneplatform.todo.model.entity.Todo">
+        select * from tb_todo_item where tenant=#{tenant} and category=#{category}
+    </select>
+</mapper>

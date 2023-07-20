@@ -6,12 +6,12 @@ sys:
   env: dev
 
 server:
-  port: 8002
+  port: 8004
 spring:
   profiles:
     active: ${sys.env}
   application:
-    name: oneplatform-system
+    name: oneplatform-todo
   boot:
     # 服务监控
     admin:

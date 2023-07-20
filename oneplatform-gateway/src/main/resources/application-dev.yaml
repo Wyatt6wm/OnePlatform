@@ -15,3 +15,7 @@ sys:
     host: localhost
     port: 8003
     domain: ${sys.op-finance.host}:${sys.op-finance.port}
+  op-todo:
+    host: localhost
+    port: 8004
+    domain: ${sys.op-todo.host}:${sys.op-todo.port}

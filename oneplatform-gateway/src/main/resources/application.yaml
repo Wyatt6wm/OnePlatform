@@ -20,6 +20,10 @@ spring:
           uri: http://${sys.op-finance.domain}
           predicates:
             - Path=/api/finance/**
+        - id: OnePlatformTodo
+          uri: http://${sys.op-todo.domain}
+          predicates:
+            - Path=/api/todo/**
     # 服务注册
     consul:
       host: ${sys.op-registry.host}

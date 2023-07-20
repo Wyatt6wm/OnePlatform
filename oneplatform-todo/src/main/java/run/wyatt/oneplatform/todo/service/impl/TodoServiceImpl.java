@@ -21,17 +21,17 @@ public class TodoServiceImpl implements TodoService {
     private TodoDao todoDao;
 
     @Override
-    public Todo createTodo(Long tenant, Todo todo) {
-        log.info("输入参数: tenant={} todo={}", tenant, todo);
+    public Todo createTodo(Long tenant, Todo newTodo) {
+        log.info("输入参数: tenant={} newTodo={}", tenant, newTodo);
 
-        todo.setId(null);
-        todo.setTenant(tenant);
-        if (todoDao.insert(todo) == 0) {
+        newTodo.setId(null);
+        newTodo.setTenant(tenant);
+        if (todoDao.insert(newTodo) == 0) {
             throw new BusinessException("创建待办失败");
         }
+        log.info("成功创建待办: todoId={}", newTodo.getId());
 
-        log.info("成功创建待办: todoId={}", todo.getId());
-        return todo;
+        return newTodo;
     }
 
     @Override
@@ -45,10 +45,10 @@ public class TodoServiceImpl implements TodoService {
     }
 
     @Override
-    public void editTodo(Long tenant, Long todoId, Todo todo) {
-        log.info("输入参数: tenant={}, todoId={}, todo={}", tenant, todoId, todo);
+    public void editTodo(Long tenant, Long todoId, Todo newTodo) {
+        log.info("输入参数: tenant={}, todoId={}, newTodo={}", tenant, todoId, newTodo);
 
-        if (todoDao.update(tenant, todoId, todo) == 0) {
+        if (todoDao.update(tenant, todoId, newTodo) == 0) {
             throw new BusinessException("编辑待办失败");
         }
         log.info("成功编辑待办");

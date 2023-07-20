@@ -100,7 +100,7 @@ public class TodoController {
     @SaCheckLogin
     @PostMapping("/submitTodo")
     public R submitTodo(@RequestBody TodoForm todoForm) {
-        log.info("请求参数: todoForm={}", todoForm);
+        log.info("请求参数: {}", todoForm);
         Assert.notNull(todoForm, "todoForm为null");
 
         // 租户
@@ -274,7 +274,6 @@ public class TodoController {
         TodoLog lastTodoLog = todoLogService.addTodoLog(tenant, todoForm.getId(), "取消待办", todoForm.getConclusion());
 
         Todo todo = new Todo();
-        todo.setFinishTime(new Date());
         todo.setStatus(TodoConst.STATUS_CANCEL);
         todo.setConclusion(todoForm.getConclusion());
         todo.setLastLogId(lastTodoLog.getId());

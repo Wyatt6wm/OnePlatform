@@ -41,14 +41,9 @@ public class AuthController {
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @PostMapping("/addAuth")
     public R addAuth(@RequestBody AuthForm authForm) {
-        log.info("请求参数: authForm={}", authForm);
-        try {
-            Assert.notNull(authForm, "请求参数为null");
-            Assert.hasText(authForm.getIdentifier(), "权限标识符为空");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        log.info("请求参数: {}", authForm);
+        Assert.notNull(authForm, "请求参数为null");
+        Assert.hasText(authForm.getIdentifier(), "权限标识符为空");
 
         String identifier = authForm.getIdentifier();
         String name = authForm.getName();
@@ -68,21 +63,15 @@ public class AuthController {
         MapData data = new MapData();
         data.put("auth", newAuth);
         return R.success(data);
-
     }
 
     @ApiOperation("删除权限")
     @SaCheckLogin
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @GetMapping("/removeAuth")
-    public R removeAuth(@RequestParam("id") Long authId) {
-        log.info("请求参数: id={}", authId);
-        try {
-            Assert.notNull(authId, "权限ID为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+    public R removeAuth(@RequestParam("authId") Long authId) {
+        log.info("请求参数: authId={}", authId);
+        Assert.notNull(authId, "权限ID为null");
 
         log.info("删除权限");
         authService.removeAuth(authId);
@@ -95,13 +84,8 @@ public class AuthController {
     @PostMapping("/editAuth")
     public R editAuth(@RequestBody AuthForm authForm) {
         log.info("请求参数: {}", authForm);
-        try {
-            Assert.notNull(authForm, "请求参数为null");
-            Assert.notNull(authForm.getId(), "权限ID为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(authForm, "请求参数为null");
+        Assert.notNull(authForm.getId(), "权限ID为null");
 
         Long id = authForm.getId();
         String identifier = authForm.getIdentifier();

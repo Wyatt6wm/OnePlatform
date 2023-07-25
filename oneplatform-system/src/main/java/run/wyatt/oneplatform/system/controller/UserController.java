@@ -56,22 +56,17 @@ public class UserController {
     @ApiOperation("注册用户")
     @PostMapping("/registry")
     public R registry(@RequestBody RegistryForm registryForm) {
-        try {
-            Assert.notNull(registryForm, "请求参数为null");
-            Assert.notNull(registryForm.getUsername(), "用户名为null");
-            Assert.notNull(registryForm.getPassword(), "密码为null");
-            Assert.notNull(registryForm.getCaptchaKey(), "验证码KEY为null");
-            Assert.notNull(registryForm.getCaptchaInput(), "验证码为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(registryForm, "请求参数为null");
+        Assert.notNull(registryForm.getUsername(), "用户名为null");
+        Assert.notNull(registryForm.getPassword(), "密码为null");
+        Assert.notNull(registryForm.getCaptchaKey(), "验证码KEY为null");
+        Assert.notNull(registryForm.getCaptchaInput(), "验证码为null");
 
         String username = registryForm.getUsername();
         String password = registryForm.getPassword();
         String captchaKey = registryForm.getCaptchaKey();
         String captchaInput = registryForm.getCaptchaInput();
-        log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
+        log.info("请求参数: username={}, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
         if (userService.wrongUsernameFormat(username)) {
@@ -101,22 +96,17 @@ public class UserController {
     @ApiOperation("登录认证")
     @PostMapping("/login")
     public R login(@RequestBody LoginForm loginForm) {
-        try {
-            Assert.notNull(loginForm, "请求参数为null");
-            Assert.notNull(loginForm.getUsername(), "用户名为null");
-            Assert.notNull(loginForm.getPassword(), "密码为null");
-            Assert.notNull(loginForm.getCaptchaKey(), "验证码KEY为null");
-            Assert.notNull(loginForm.getCaptchaInput(), "验证码为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(loginForm, "请求参数为null");
+        Assert.notNull(loginForm.getUsername(), "用户名为null");
+        Assert.notNull(loginForm.getPassword(), "密码为null");
+        Assert.notNull(loginForm.getCaptchaKey(), "验证码KEY为null");
+        Assert.notNull(loginForm.getCaptchaInput(), "验证码为null");
 
         String username = loginForm.getUsername();
         String password = loginForm.getPassword();
         String captchaKey = loginForm.getCaptchaKey();
         String captchaInput = loginForm.getCaptchaInput();
-        log.info("请求参数: username={}, password=*, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
+        log.info("请求参数: username={}, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
         if (userService.wrongUsernameFormat(username)) {
@@ -206,12 +196,7 @@ public class UserController {
     @PostMapping("/editProfile")
     public R editProfile(@RequestBody ProfileForm profileForm) {
         log.info("请求参数: {}", profileForm);
-        try {
-            Assert.notNull(profileForm, "请求参数为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(profileForm, "请求参数为null");
 
         Long userId = StpUtil.getLoginIdAsLong();
         String nickname = profileForm.getNickname();
@@ -255,14 +240,9 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @GetMapping("/getRolesOfUser")
-    public R getRolesOfUser(@RequestParam("id") Long roleId) {
-        log.info("请求参数: id={}", roleId);
-        try {
-            Assert.notNull(roleId, "请求参数为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+    public R getRolesOfUser(@RequestParam("userId") Long roleId) {
+        log.info("请求参数: userId={}", roleId);
+        Assert.notNull(roleId, "请求参数为null");
 
         log.info("查询用户的全部角色");
         List<Role> roles = roleService.listRoles(roleId);
@@ -278,15 +258,11 @@ public class UserController {
     @PostMapping("/changeBinds")
     public R changeBinds(@RequestBody BindForm bindForm) {
         log.info("请求参数: {}", bindForm);
-        try {
-            Assert.notNull(bindForm, "请求参数为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(bindForm, "请求参数为null");
 
         List<Long> failBind = userService.bind(bindForm.getUserId(), bindForm.getBindList());
         List<Long> failUnbind = userService.unbind(bindForm.getUserId(), bindForm.getUnbindList());
+
         MapData data = new MapData();
         data.put("failBind", failBind);
         data.put("failUnbind", failUnbind);
@@ -297,17 +273,12 @@ public class UserController {
     @SaCheckLogin
     @PostMapping("/changePassword")
     public R changePassword(@RequestBody ChangePasswordForm form) {
-        try {
-            Assert.notNull(form, "请求参数为null");
-            Assert.notNull(form.getUserId(), "用户ID为null");
-            Assert.notNull(form.getPassword(), "密码为null");
-            Assert.notNull(form.getNewPassword(), "新密码为null");
-            Assert.notNull(form.getCaptchaKey(), "验证码KEY为null");
-            Assert.notNull(form.getCaptchaInput(), "验证码为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(form, "请求参数为null");
+        Assert.notNull(form.getUserId(), "用户ID为null");
+        Assert.notNull(form.getPassword(), "密码为null");
+        Assert.notNull(form.getNewPassword(), "新密码为null");
+        Assert.notNull(form.getCaptchaKey(), "验证码KEY为null");
+        Assert.notNull(form.getCaptchaInput(), "验证码为null");
 
         Long userId = form.getUserId();
         String password = form.getPassword();
@@ -338,7 +309,7 @@ public class UserController {
 
         // 修改密码
         userService.changePassword(userId, newPassword);
-        
+
         return R.success();
     }
 }

@@ -334,8 +334,8 @@ public class TodoController {
         String emergency = "【紧急度】 " + (todo.getEmergency() ? "紧急" : "一般") + "<br>";
         String importance = "【重要性】 " + (todo.getImportance() ? "重要" : "一般") + "<br>";
         String deadline = "【截止时间】 " + sdf.format(todo.getDeadline()) + "<br>";
-        String workloadHour = "【工作总量】 " + sdf.format(todo.getWorkloadHour()) + "小时<br>";
-        String workloadDay = "【跨越天数】 " + sdf.format(todo.getDeadline()) + "天<br>";
+        String workloadHour = "【工作总量】 " + String.format("%.1f", todo.getWorkloadHour()) + "小时<br>";
+        String workloadDay = "【跨越天数】 " + todo.getWorkloadDay() + "天<br>";
         return name + emergency + importance + deadline + workloadHour + workloadDay;
     }
 }

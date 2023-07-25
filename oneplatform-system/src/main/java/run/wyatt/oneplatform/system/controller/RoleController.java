@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.http.MapData;
 import run.wyatt.oneplatform.common.http.R;
 import run.wyatt.oneplatform.system.model.constant.SysConst;
@@ -46,14 +45,9 @@ public class RoleController {
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @PostMapping("/addRole")
     public R addRole(@RequestBody RoleForm roleForm) {
-        log.info("请求参数: ", roleForm);
-        try {
-            Assert.notNull(roleForm, "请求参数为null");
-            Assert.hasText(roleForm.getIdentifier(), "角色标识符为空");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        log.info("请求参数: {}", roleForm);
+        Assert.notNull(roleForm, "请求参数为null");
+        Assert.hasText(roleForm.getIdentifier(), "角色标识符为空");
 
         String identifier = roleForm.getIdentifier();
         String name = roleForm.getName();
@@ -81,15 +75,11 @@ public class RoleController {
     @PostMapping("/changeGrants")
     public R changeGrants(@RequestBody GrantForm grantForm) {
         log.info("请求参数: {}", grantForm);
-        try {
-            Assert.notNull(grantForm, "请求参数为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(grantForm, "请求参数为null");
 
         List<Long> failGrant = roleService.grant(grantForm.getRoleId(), grantForm.getGrantList());
         List<Long> failUngrant = roleService.ungrant(grantForm.getRoleId(), grantForm.getUngrantList());
+
         MapData data = new MapData();
         data.put("failGrant", failGrant);
         data.put("failUngrant", failUngrant);
@@ -100,14 +90,9 @@ public class RoleController {
     @SaCheckLogin
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @GetMapping("/removeRole")
-    public R removeRole(@RequestParam("id") Long roleId) {
-        log.info("请求参数: id={}", roleId);
-        try {
-            Assert.notNull(roleId, "角色ID为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+    public R removeRole(@RequestParam("roleId") Long roleId) {
+        log.info("请求参数: roleId={}", roleId);
+        Assert.notNull(roleId, "角色ID为null");
 
         log.info("删除角色");
         roleService.removeRole(roleId);
@@ -120,13 +105,8 @@ public class RoleController {
     @PostMapping("/editRole")
     public R editRole(@RequestBody RoleForm roleForm) {
         log.info("请求参数: {}", roleForm);
-        try {
-            Assert.notNull(roleForm, "请求参数为null");
-            Assert.notNull(roleForm.getId(), "角色ID为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+        Assert.notNull(roleForm, "请求参数为null");
+        Assert.notNull(roleForm.getId(), "角色ID为null");
 
         Long id = roleForm.getId();
         String identifier = roleForm.getIdentifier();
@@ -166,14 +146,9 @@ public class RoleController {
     @SaCheckLogin
     @SaCheckRole(SysConst.SUPER_ADMIN_ROLE_IDENTIFIER)
     @GetMapping("/getAuthsOfRole")
-    public R getAuthsOfRole(@RequestParam("id") Long roleId) {
-        log.info("请求参数: id={}", roleId);
-        try {
-            Assert.notNull(roleId, "请求参数为null");
-        } catch (Exception e) {
-            log.info(e.getMessage());
-            throw new BusinessException("请求参数错误");
-        }
+    public R getAuthsOfRole(@RequestParam("roleId") Long roleId) {
+        log.info("请求参数: roleId={}", roleId);
+        Assert.notNull(roleId, "请求参数为null");
 
         log.info("查询角色的全部权限");
         List<Auth> auths = authService.listAuths(roleId);

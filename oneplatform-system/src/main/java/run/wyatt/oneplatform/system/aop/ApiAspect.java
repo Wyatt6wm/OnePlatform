@@ -14,6 +14,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import run.wyatt.oneplatform.common.exception.BusinessException;
 import run.wyatt.oneplatform.common.exception.DatabaseException;
 import run.wyatt.oneplatform.common.http.MapData;
@@ -59,6 +60,10 @@ public class ApiAspect {
             } else if (e instanceof NotLoginException) {   // 未登录
                 r.setMesg("未登录");
                 MapData data = new MapData("code", 401);
+                r.setData(data);
+            } else if (e instanceof IllegalArgumentException || e instanceof MissingServletRequestParameterException) {
+                r.setMesg("请求参数错误");
+                MapData data = new MapData("code", 400);
                 r.setData(data);
             } else if (e instanceof NotRoleException || e instanceof NotPermissionException) { // 鉴权失败
                 r.setMesg("服务不可用");

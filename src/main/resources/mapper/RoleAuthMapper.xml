@@ -4,15 +4,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="run.wyatt.oneplatform.dao.RoleAuthDao">
     <insert id="insert">
-        insert into tb_sys_role_auth (role_id, auth_id) values (#{roleId}, #{authId})
+        insert into tb_um_role_auth (role_id, auth_id) values (#{roleId}, #{authId})
     </insert>
     <delete id="delete">
-        delete from tb_sys_role_auth where role_id=#{roleId} and auth_id=#{authId}
+        delete from tb_um_role_auth where role_id=#{roleId} and auth_id=#{authId}
     </delete>
     <delete id="deleteByRoleId">
-        delete from tb_sys_role_auth where role_id=#{roleId}
+        delete from tb_um_role_auth where role_id=#{roleId}
     </delete>
     <delete id="deleteByAuthId">
-        delete from tb_sys_role_auth where auth_id=#{authId}
+        delete from tb_um_role_auth where auth_id=#{authId}
     </delete>
 </mapper>

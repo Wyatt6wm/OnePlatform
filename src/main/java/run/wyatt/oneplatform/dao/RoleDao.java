@@ -13,9 +13,9 @@ import java.util.List;
 public interface RoleDao {
     long insert(Role record);
 
-    long delete(Long roleId);
+    long delete(Long id);
 
-    long update(Long roleId, Role record);
+    long update(Long id, Role record);
 
     List<Role> findAll();
 

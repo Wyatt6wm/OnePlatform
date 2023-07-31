@@ -15,7 +15,7 @@ import javax.sql.DataSource;
  * @date 2023/6/9 14:37
  */
 @Configuration
-@MapperScan("run.wyatt.oneplatform.**.dao")
+@MapperScan("run.wyatt.oneplatform.dao")
 public class MybatisConfig {
     @Autowired
     private DataSource dataSource;

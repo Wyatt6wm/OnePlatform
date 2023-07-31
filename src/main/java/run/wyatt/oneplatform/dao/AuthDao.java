@@ -13,9 +13,9 @@ import java.util.List;
 public interface AuthDao {
     long insert(Auth record);
 
-    long delete(Long authId);
+    long delete(Long id);
 
-    long update(Long authId, Auth record);
+    long update(Long id, Auth record);
 
     List<Auth> findAll();
 

@@ -13,7 +13,7 @@ import java.util.List;
 public interface UserDao {
     long insert(User record);
 
-    long update(Long userId, User record);
+    long update(Long id, User record);
 
     List<User> findAll();
 

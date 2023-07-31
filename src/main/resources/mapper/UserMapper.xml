@@ -5,7 +5,7 @@
 <mapper namespace="run.wyatt.oneplatform.dao.UserDao">
     <insert id="insert" parameterType="run.wyatt.oneplatform.model.entity.User" useGeneratedKeys="true"
             keyColumn="id" keyProperty="id">
-        insert into tb_sys_user (
+        insert into tb_um_user (
         <trim suffixOverrides="," suffix="">
             <if test="username != null">username,</if>
             <if test="password != null">password,</if>
@@ -26,7 +26,7 @@
         )
     </insert>
     <update id="update">
-        update tb_sys_user set
+        update tb_um_user set
         <trim suffixOverrides="," suffix="">
             id=id,
             <if test="record.username != null">username=#{record.username},</if>
@@ -36,18 +36,18 @@
             <if test="record.motto != null">motto=#{record.motto},</if>
             <if test="record.avatar != null">avatar=#{record.avatar},</if>
         </trim>
-        where id=#{userId}
+        where id=#{id}
     </update>
     <select id="findAll" resultType="run.wyatt.oneplatform.model.entity.User">
-        select * from tb_sys_user
+        select * from tb_um_user
     </select>
     <select id="findById" resultType="run.wyatt.oneplatform.model.entity.User">
-        select * from tb_sys_user where id=#{id}
+        select * from tb_um_user where id=#{id}
     </select>
     <select id="findByUsername" resultType="run.wyatt.oneplatform.model.entity.User">
-        select * from tb_sys_user where username=#{username}
+        select * from tb_um_user where username=#{username}
     </select>
     <select id="findByNickname" resultType="run.wyatt.oneplatform.model.entity.User">
-        select * from tb_sys_user where nickname=#{nickname}
+        select * from tb_um_user where nickname=#{nickname}
     </select>
 </mapper>

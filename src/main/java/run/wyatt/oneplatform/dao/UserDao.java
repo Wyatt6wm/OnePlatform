@@ -12,9 +12,14 @@ import java.util.List;
 @Mapper
 public interface UserDao {
     long insert(User record);
+
     long update(Long userId, User record);
+
     List<User> findAll();
+
     User findById(Long id);
+
     User findByUsername(String username);
+
     User findByNickname(String nickname);
 }

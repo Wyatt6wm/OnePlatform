@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="run.wyatt.oneplatform.dao.RoleDao">
+    <insert id="insert" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+        insert into tb_sys_role (
+        <trim suffixOverrides="," suffix="">
+            <if test="identifier != null">identifier,</if>
+            <if test="name != null">name,</if>
+            <if test="description != null">description,</if>
+            <if test="activated != null">activated,</if>
+        </trim>
+        ) values (
+        <trim suffixOverrides="," suffix="">
+            <if test="identifier != null">#{identifier},</if>
+            <if test="name != null">#{name},</if>
+            <if test="description != null">#{description},</if>
+            <if test="activated != null">#{activated},</if>
+        </trim>
+        )
+    </insert>
+    <delete id="delete">
+        delete from tb_sys_role where id=#{roleId}
+    </delete>
+    <update id="update">
+        update tb_sys_role set
+        <trim suffixOverrides="," suffix="">
+            id=id,
+            <if test="record.identifier != null">identifier=#{record.identifier},</if>
+            <if test="record.name != null">name=#{record.name},</if>
+            <if test="record.description != null">description=#{record.description},</if>
+            <if test="record.activated != null">activated=#{record.activated},</if>
+        </trim>
+        where id=#{roleId}
+    </update>
+    <select id="findAll" resultType="run.wyatt.oneplatform.model.entity.Role">
+        select * from tb_sys_role
+    </select>
+    <select id="findByUserId" resultType="run.wyatt.oneplatform.model.entity.Role">
+        select distinct R.id, R.identifier, R.name, R.description, R.activated
+        from (select * from tb_sys_user_role where user_id=#{userId}) UR
+        inner join tb_sys_role R on UR.role_id=R.id
+    </select>
+    <select id="findActivatedByUserId" resultType="run.wyatt.oneplatform.model.entity.Role">
+        select distinct R.id, R.identifier, R.name, R.description, R.activated
+        from (select * from tb_sys_user_role where user_id=#{userId}) UR
+        inner join tb_sys_role R on UR.role_id=R.id and R.activated=1
+    </select>
+</mapper>

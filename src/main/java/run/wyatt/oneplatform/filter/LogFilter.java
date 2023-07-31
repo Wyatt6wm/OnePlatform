@@ -27,7 +27,7 @@ public class LogFilter extends OncePerRequestFilter implements Filter {
             MDC.put("RID", rid);
             // 只筛选业务请求打印日志
             String url = request.getRequestURL().toString();
-            if (url.matches("^.*/api.*$")) {
+            if (url.matches("^.*/api/.*$")) {
                 log.info(">>>>> 开始处理请求: {} {}", request.getMethod(), request.getRequestURL());
             }
             chain.doFilter(request, response);

@@ -2,7 +2,7 @@
 #   1.开发测试环境：dev
 #   2.本地运行（测试）：local
 #   3.服务器运行（生产）：run
-env: run
+env: dev
 server:
   port: 8000
 spring:

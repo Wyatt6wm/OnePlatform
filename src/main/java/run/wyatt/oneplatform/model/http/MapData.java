@@ -1,4 +1,4 @@
-package run.wyatt.oneplatform.http;
+package run.wyatt.oneplatform.model.http;
 
 import java.util.HashMap;
 

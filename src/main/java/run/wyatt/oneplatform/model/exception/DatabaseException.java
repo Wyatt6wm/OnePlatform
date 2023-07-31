@@ -1,4 +1,4 @@
-package run.wyatt.oneplatform.exception;
+package run.wyatt.oneplatform.model.exception;
 
 /**
  * @author Wyatt

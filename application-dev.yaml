@@ -8,6 +8,11 @@ mysql:
   username: db_access
   password: PZvVdnpwJLS83yu/1A3bcEpCvDNErNWWfSuu0a1AUnps6UaR0o6ozvjYQJltl+uyjYVR0mw0QZFsole3KtaS4Q==
   public-key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAOPSlUVOw2Wq+mX+KGcyd98jWOnK223S+69leJyfIiRHuxm55fQcvqlFfxc65DRUOsL20OsBH16zjxvHJXJSXzsCAwEAAQ==
+spring:
+  # Redis缓存
+  redis:
+    host: wyatt.run
+    port: 9101
 logging:
   # 级别依次为（从高到低）：FATAL > ERROR > WARN > INFO > DEBUG > TRACE
   level:

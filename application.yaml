@@ -1,0 +1,14 @@
+# 系统运行环境：
+#   1.开发测试环境：dev
+#   2.本地运行（测试）：local
+#   3.服务器运行（生产）：run
+env: run
+server:
+  port: 8000
+spring:
+  profiles:
+    active: ${env}
+  application:
+    name: oneplatform
+logging:
+  config: classpath:logback-spring.xml

@@ -1,0 +1,10 @@
+logging:
+  # 级别依次为（从高到低）：FATAL > ERROR > WARN > INFO > DEBUG > TRACE
+  level:
+    root: info
+    # 为包设置特定日志级别，可以覆盖上层设定的日志级别
+    org.springframework: warn
+    org.apache: warn
+    org.mybatis: warn
+    run.wyatt.oneplatform.system: info
+    run.wyatt.oneplatform.system.dao: debug # 设为debug可以查看SQL

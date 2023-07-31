@@ -33,7 +33,7 @@ public class ApiAspect {
     /**
      * API切面
      */
-    @Pointcut("within(run.wyatt.oneplatform.*.controller.*Controller)")
+    @Pointcut("within(run.wyatt.oneplatform.controller.*)")
     public void apiPointcut() {
         // 方法为空，仅用来定义切入点，逻辑另外实现。
     }

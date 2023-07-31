@@ -20,7 +20,7 @@ public class ServiceAspect {
     /**
      * Service切面
      */
-    @Pointcut("within(run.wyatt.oneplatform.*.service.impl.*ServiceImpl)")
+    @Pointcut("within(run.wyatt.oneplatform.service.impl.*ServiceImpl)")
     public void servicePointcut() {
         // 方法为空，仅用来定义切入点，逻辑另外实现。
     }

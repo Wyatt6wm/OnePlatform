@@ -26,7 +26,7 @@ public class MybatisConfig {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
         sessionFactory.setDataSource(dataSource);
-        sessionFactory.setTypeAliasesPackage("run.wyatt.oneplatform.**.model.entity");
+        sessionFactory.setTypeAliasesPackage("run.wyatt.oneplatform.model.entity");
         sessionFactory.setMapperLocations(resolver.getResources("classpath:/mapper/*Mapper.xml"));
         sessionFactory.setConfigLocation(resolver.getResource("classpath:/mybatis-config.xml"));
 

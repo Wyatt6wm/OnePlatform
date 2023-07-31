@@ -1,8 +1,9 @@
 # 系统运行环境：
-#   1.开发测试环境：dev
-#   2.本地运行（测试）：local
-#   3.服务器运行（生产）：run
+#   1.服务器运行（生产）：default
+#   2.开发测试：dev
+#   3.本地运行（测试）：local
 env: dev
+
 server:
   port: 8000
 spring:
@@ -10,5 +11,26 @@ spring:
     active: ${env}
   application:
     name: oneplatform
+
+# Druid连接池
+druid:
+  username: 待填写
+  password: 待填写
+# MySQL数据库
+mysql:
+  domain: oneplatform-mysql:3306
+  username: db_access
+  password: 待填写
+  public-key: 待填写
+
 logging:
   config: classpath:logback-spring.xml
+  # 级别依次为（从高到低）：FATAL > ERROR > WARN > INFO > DEBUG > TRACE
+  level:
+    root: info
+    # 为包设置特定日志级别，可以覆盖上层设定的日志级别
+    org.springframework: warn
+    org.apache: warn
+    org.mybatis: warn
+    run.wyatt.oneplatform: info
+    run.wyatt.oneplatform.dao: debug # 设为debug可以查看SQL

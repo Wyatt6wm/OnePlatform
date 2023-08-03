@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import run.wyatt.oneplatform.dao.AuthDao;
 import run.wyatt.oneplatform.dao.RoleAuthDao;
 import run.wyatt.oneplatform.dao.RoleDao;
+import run.wyatt.oneplatform.dao.UserRoleDao;
 import run.wyatt.oneplatform.model.constant.RedisConst;
 import run.wyatt.oneplatform.model.entity.Role;
 import run.wyatt.oneplatform.model.exception.BusinessException;
@@ -36,6 +37,8 @@ public class RoleServiceImpl implements RoleService {
     private AuthDao authDao;
     @Autowired
     private RoleAuthDao roleAuthDao;
+    @Autowired
+    private UserRoleDao userRoleDao;
     @Autowired
     private AuthService authService;
 
@@ -128,10 +131,12 @@ public class RoleServiceImpl implements RoleService {
 
         if (roleDao.delete(roleId) == 0) {
             throw new BusinessException("该角色数据不存在");
+        } else {
+            userRoleDao.deleteByRoleId(roleId);
+            roleAuthDao.deleteByRoleId(roleId);
+            updateRoleDbChangeTime();
+            log.info("成功删除角色记录");
         }
-
-        updateRoleDbChangeTime();
-        log.info("成功删除角色记录");
     }
 
     @Override

@@ -100,6 +100,12 @@ public class UserServiceImpl implements UserService {
         if (userId == null || roleId == null) {
             throw new BusinessException("参数错误");
         }
+        if (roleId.equals(RoleConst.SUPER_ADMIN_ID)) {
+            throw new BusinessException("无法为指定用户绑定超级管理员");
+        }
+        if (roleId.equals(RoleConst.ADMIN_ID) && !StpUtil.getRoleList().contains(RoleConst.SUPER_ADMIN_IDENTIFIER)) {
+            throw new BusinessException("权限不足，无法为指定用户绑定管理员");
+        }
 
         if (userRoleDao.insert(userId, roleId) == 1) {
             log.info("绑定成功");
@@ -120,9 +126,17 @@ public class UserServiceImpl implements UserService {
         List<Long> failList = new ArrayList<>();
         for (Long roleId : roleIds) {
             try {
+                if (roleId.equals(RoleConst.SUPER_ADMIN_ID)) {
+                    throw new BusinessException("无法为指定用户绑定超级管理员");
+                }
+                if (roleId.equals(RoleConst.ADMIN_ID) && !StpUtil.getRoleList().contains(RoleConst.SUPER_ADMIN_IDENTIFIER)) {
+                    throw new BusinessException("权限不足，无法为指定用户绑定管理员");
+                }
+
                 userRoleDao.insert(userId, roleId);
                 log.info("bind: (userId={}, roleId={})", userId, roleId);
             } catch (Exception e) {
+                log.info(e.getMessage());
                 failList.add(roleId);
             }
         }
@@ -145,9 +159,17 @@ public class UserServiceImpl implements UserService {
         List<Long> failList = new ArrayList<>();
         for (Long roleId : roleIds) {
             try {
+                if (roleId.equals(RoleConst.SUPER_ADMIN_ID)) {
+                    throw new BusinessException("无法为指定用户解除超级管理员的绑定");
+                }
+                if (roleId.equals(RoleConst.ADMIN_ID) && !StpUtil.getRoleList().contains(RoleConst.SUPER_ADMIN_IDENTIFIER)) {
+                    throw new BusinessException("权限不足，无法为指定用户解除管理员的绑定");
+                }
+
                 userRoleDao.delete(userId, roleId);
                 log.info("unbind: (userId={}, roleId={})", userId, roleId);
             } catch (Exception e) {
+                log.info(e.getMessage());
                 failList.add(roleId);
             }
         }

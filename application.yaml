@@ -1,0 +1,47 @@
+# 系统运行环境：1.服务器运行（生产）：default；2.开发测试：dev
+env: dev
+# Druid连接池
+druid:
+  username: 待填写
+  password: 待填写
+# MySQL数据库
+mysql:
+  domain: oneplatform-mysql:3306
+  username: db_access
+  password: 待填写
+  public-key: 待填写
+
+
+server:
+  port: 8000
+spring:
+  profiles:
+    active: ${env}
+  application:
+    name: oneplatform
+  redis:
+    database: 0
+    host: oneplatform-redis
+    port: 6379
+    timeout: 10s
+    lettuce:
+      pool:
+        # 连接池最大连接数
+        max-active: 200
+        # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: -1ms
+        # 连接池中的最大空闲连接
+        max-idle: 10
+        # 连接池中的最小空闲连接
+        min-idle: 1
+logging:
+  config: classpath:logback-spring.xml
+  # 级别依次为（从高到低）：FATAL > ERROR > WARN > INFO > DEBUG > TRACE
+  level:
+    root: info
+    # 为包设置特定日志级别，可以覆盖上层设定的日志级别
+    org.springframework: warn
+    org.apache: warn
+    org.mybatis: warn
+    run.wyatt.oneplatform: info
+    run.wyatt.oneplatform.dao: debug # 设为debug可以查看SQL

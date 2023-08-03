@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <contextName>OnePlatform</contextName>
+    <!--保存目录-->
+    <property name="PATH" value="./log"/>
+    <!--打印格式模板-->
+    <property name="PATTERN"
+              value="+%d{yyyy-MM-dd HH:mm:ss.SSS} %5level    [%15.15t] [%X{RID:- }] %-30.30logger{30} :%-5.5line %m%n"/>
+    <!--             +      日期         时间                   日志级      [线程]     [请求ID]            类         :行号    信息\n-->
+
+    <!-- 级别依次为（从高到低）：FATAL > ERROR > WARN > INFO > DEBUG > TRACE  -->
+
+    <!--控制台日志-->
+    <appender name="ConsoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <!--过滤只留下ERROR级别日志-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <!--错误文件日志-->
+    <appender name="ErrorFileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--记录FATAL、ERROR级别-->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${PATH}/err.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>10</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <maxFileSize>10MB</maxFileSize>
+        </rollingPolicy>
+    </appender>
+    <!--业务文件日志-->
+    <appender name="BusinessFileLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--过滤留下DEBUG及以上级别日志：DEBUG、INFO、WARN、ERROR-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${PATH}/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>10</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <maxFileSize>10MB</maxFileSize>
+        </rollingPolicy>
+    </appender>
+
+    <!-- root logger根记录器，日志级别可以被继承 -->
+    <root level="INFO">
+        <appender-ref ref="ConsoleLog"/>
+        <appender-ref ref="ErrorFileLog"/>
+        <appender-ref ref="BusinessFileLog"/>
+    </root>
+</configuration>

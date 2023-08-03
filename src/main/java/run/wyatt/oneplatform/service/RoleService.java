@@ -22,6 +22,14 @@ public interface RoleService {
      * 授权（绑定roleId和authId）
      *
      * @param roleId  角色ID
+     * @param authId 该角色要绑定的权限ID
+     */
+    void grant(Long roleId, Long authId);
+
+    /**
+     * 授权（绑定roleId和authId）
+     *
+     * @param roleId  角色ID
      * @param authIds 该角色要绑定的权限ID列表
      * @return 授权失败的权限ID列表
      */

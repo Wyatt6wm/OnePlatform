@@ -62,6 +62,19 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    public void grant(Long roleId, Long authId) {
+        log.info("输入参数: roleId={}, authId={}", roleId, authId);
+        if (roleId == null || authId == null) throw new BusinessException("参数错误");
+
+        if (roleAuthDao.insert(roleId, authId) == 1) {
+            log.info("授权成功，为用户标记须更新权限标识符缓存");
+            authService.updateAuthDbChangeTime();
+        } else {
+            throw new BusinessException("授权失败");
+        }
+    }
+
+    @Override
     public List<Long> grant(Long roleId, List<Long> authIds) {
         log.info("输入参数: roleId={}, authIds={}", roleId, authIds);
         if (roleId == null || authIds == null) throw new BusinessException("参数错误");

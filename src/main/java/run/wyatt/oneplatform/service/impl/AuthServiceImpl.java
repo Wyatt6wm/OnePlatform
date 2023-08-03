@@ -8,10 +8,13 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import run.wyatt.oneplatform.dao.AuthDao;
+import run.wyatt.oneplatform.dao.RoleAuthDao;
 import run.wyatt.oneplatform.model.constant.RedisConst;
+import run.wyatt.oneplatform.model.constant.RoleConst;
 import run.wyatt.oneplatform.model.entity.Auth;
 import run.wyatt.oneplatform.model.exception.BusinessException;
 import run.wyatt.oneplatform.service.AuthService;
+import run.wyatt.oneplatform.service.RoleService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,6 +32,10 @@ public class AuthServiceImpl implements AuthService {
     private RedisTemplate<String, Object> redis;
     @Autowired
     private AuthDao authDao;
+    @Autowired
+    private RoleAuthDao roleAuthDao;
+    @Autowired
+    private RoleService roleService;
 
     @Override
     public Auth createAuth(Auth auth) {
@@ -45,11 +52,16 @@ public class AuthServiceImpl implements AuthService {
 
         if (rows == 0) {
             throw new BusinessException("创建权限失败");
+        } else {
+            log.info("成功创建权限: authId={}", auth.getId());
+            try {
+                roleService.grant(RoleConst.SUPER_ADMIN_ID, auth.getId());
+            } catch (Exception e) {
+                log.info("自动授权给超级管理员失败，须手动授权");
+                updateAuthDbChangeTime();
+            }
+            return auth;
         }
-
-        updateAuthDbChangeTime();
-        log.info("成功创建权限: authId={}", auth.getId());
-        return auth;
     }
 
     @Override
@@ -58,10 +70,11 @@ public class AuthServiceImpl implements AuthService {
 
         if (authDao.delete(authId) == 0) {
             throw new BusinessException("该权限数据不存在");
+        } else {
+            roleAuthDao.deleteByAuthId(authId);
+            updateAuthDbChangeTime();
+            log.info("成功删除权限");
         }
-
-        updateAuthDbChangeTime();
-        log.info("成功删除权限");
     }
 
     @Override

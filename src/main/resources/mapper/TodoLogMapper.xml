@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="run.wyatt.oneplatform.dao.TodoLogDao">
+    <insert id="insert" parameterType="run.wyatt.oneplatform.model.entity.TodoLog">
+        insert into tb_tl_todo_log (
+        <trim suffixOverrides="," suffix="">
+            <if test="uuid != null">uuid,</if>
+            <if test="tenant != null">tenant,</if>
+            <if test="todoUuid != null">todo_uuid,</if>
+            <if test="title != null">title,</if>
+            <if test="log != null">log,</if>
+            <if test="logType != null">log_type,</if>
+            <if test="submitTime != null">submit_time,</if>
+        </trim>
+        ) values (
+        <trim suffixOverrides="," suffix="">
+            <if test="uuid != null">#{uuid},</if>
+            <if test="tenant != null">#{tenant},</if>
+            <if test="todoUuid != null">#{todoUuid},</if>
+            <if test="title != null">#{title},</if>
+            <if test="log != null">#{log},</if>
+            <if test="logType != null">#{logType},</if>
+            <if test="submitTime != null">#{submitTime},</if>
+        </trim>
+        )
+    </insert>
+    <select id="findByUuids" resultType="run.wyatt.oneplatform.model.entity.TodoLog">
+        select * from tb_tl_todo_log where tenant=#{tenant}
+        <if test="uuids.size() > 0">
+            and uuid in (<foreach collection="uuids" item="uuid" separator=",">#{uuid}</foreach>)
+        </if>
+    </select>
+    <select id="findByTodoUuidSortBySubmitTimeDesc" resultType="run.wyatt.oneplatform.model.entity.TodoLog">
+        select * from tb_tl_todo_log where tenant=#{tenant} and todo_uuid=#{todoUuid} order by submit_time desc
+    </select>
+</mapper>

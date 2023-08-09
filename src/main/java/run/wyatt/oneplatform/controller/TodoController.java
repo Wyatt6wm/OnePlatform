@@ -250,7 +250,7 @@ public class TodoController {
     public R finishTodo(@RequestBody TodoForm todoForm) {
         log.info("请求参数: {}", todoForm);
         Assert.notNull(todoForm, "todoForm为null");
-        Assert.notNull(todoForm.getUuid(), "todoUuid为null");
+        Assert.notNull(todoForm.getUuid(), "uuid为null");
         Assert.hasText(todoForm.getConclusion(), "conclusion为空");
 
         log.info("查询待办数据");
@@ -293,7 +293,7 @@ public class TodoController {
     public R cancelTodo(@RequestBody TodoForm todoForm) {
         log.info("请求参数: {}", todoForm);
         Assert.notNull(todoForm, "todoForm为null");
-        Assert.notNull(todoForm.getUuid(), "todoUuid为null");
+        Assert.notNull(todoForm.getUuid(), "uuid为null");
         Assert.hasText(todoForm.getConclusion(), "conclusion为空");
 
         log.info("查询待办数据");
@@ -356,7 +356,7 @@ public class TodoController {
 
     @ApiOperation("查询待办")
     @SaCheckLogin
-    @GetMapping("/getTodo/{uuid")
+    @GetMapping("/getTodo/{uuid}")
     public R getTodo(@PathVariable("uuid") String uuid) {
         log.info("请求参数: uuid={}", uuid);
 

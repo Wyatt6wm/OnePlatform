@@ -126,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
             log.info("已设置refreshAuthRedis为: {}", flag);
             return;
         }
-        log.info("用户 {} 未登录，无法设置refreshAuthRedis", userId);
+        log.info("用户{}未登录，无法设置refreshAuthRedis", userId);
     }
 
     @Override

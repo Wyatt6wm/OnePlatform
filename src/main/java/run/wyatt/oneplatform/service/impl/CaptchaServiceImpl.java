@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import run.wyatt.oneplatform.model.constant.RedisConst;
 import run.wyatt.oneplatform.model.exception.BusinessException;
 import run.wyatt.oneplatform.model.http.MapData;
@@ -30,11 +31,11 @@ public class CaptchaServiceImpl implements CaptchaService {
 
     @Override
     public MapData generateCaptcha() {
-        // 生成验证码KEY、验证码文本，并缓存到Redis
+        log.info("生成验证码KEY、验证码文本，并缓存到Redis");
         String captchaKey = UUID.randomUUID().toString().replaceAll("-", "");
         String captchaText = producer.createText();
         redis.opsForValue().set(RedisConst.CAPTCHA_KEY_PREFIX + captchaKey, captchaText, Duration.ofSeconds(RedisConst.CAPTCHA_EXP_60_SECS));
-        // 根据文本生成图片并转成Base64格式
+        log.info("根据文本生成图片并转成Base64格式");
         BufferedImage captchaImage = producer.createImage(captchaText);
         String captchaImageBase64 = ImageUtil.bufferedImageToBase64(captchaImage, "jpeg");
         log.info("验证码KEY: {}", captchaKey);
@@ -54,12 +55,15 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public void verifyCaptcha(String captchaKey, String captchaInput) {
         log.info("输入参数: captchaKey={}, captchaInput={}", captchaKey, captchaInput);
+        Assert.hasText(captchaKey, "验证码KEY为空");
+        Assert.hasText(captchaInput, "验证码输入为空");
 
+        log.info("查询缓存");
         Object captchaText = redis.opsForValue().get(RedisConst.CAPTCHA_KEY_PREFIX + captchaKey);
         if (captchaText == null) {
             throw new BusinessException("验证码失效");
         } else {
-            log.info("缓存验证码: captchaText={}", captchaText);
+            log.info("缓存的验证码: captchaText={}", captchaText);
             if (captchaInput.equalsIgnoreCase(String.valueOf(captchaText))) {
                 log.info("通过验证");
             } else {

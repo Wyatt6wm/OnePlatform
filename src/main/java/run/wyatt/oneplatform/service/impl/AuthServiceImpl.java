@@ -64,14 +64,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void removeAuth(Long id) {
-        log.info("输入参数: id={}", id);
-        Assert.notNull(id, "输入参数为空");
+    public void removeAuth(Long authId) {
+        log.info("输入参数: authId={}", authId);
+        Assert.notNull(authId, "输入参数为空");
 
         log.info("删除与本权限相关的角色-权限关联关系");
-        roleAuthRepository.deleteByAuthId(id);
+        roleAuthRepository.deleteByAuthId(authId);
         log.info("删除本权限记录");
-        authRepository.deleteById(id);
+        authRepository.deleteById(authId);
 
         log.info("更新“权限数据库变更时间”时间戳");
         updateAuthDbChangeTime();

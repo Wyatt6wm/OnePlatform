@@ -62,13 +62,13 @@ public class AuthController {
     @ApiOperation("删除权限")
     @SaCheckLogin
     @SaCheckRole(RoleConst.SUPER_ADMIN_IDENTIFIER)
-    @GetMapping("/removeAuth/{id}")
-    public R removeAuth(@PathVariable("id") Long id) {
-        log.info("请求参数: id={}", id);
-        Assert.notNull(id, "请求参数为空");
+    @GetMapping("/removeAuth/{authId}")
+    public R removeAuth(@PathVariable("authId") Long authId) {
+        log.info("请求参数: authId={}", authId);
+        Assert.notNull(authId, "请求参数为空");
 
         log.info("删除权限");
-        authService.removeAuth(id);
+        authService.removeAuth(authId);
         return R.success();
     }
 

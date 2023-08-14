@@ -19,6 +19,10 @@ spring:
     active: ${env}
   application:
     name: oneplatform
+  jpa:
+    hibernate:
+      ddl-auto: update  # create, create-drop, update, validate
+    open-in-view: false # 关掉该选项可以避免会话一直挂着，提升性能
   redis:
     database: 0
     host: oneplatform-redis
@@ -42,6 +46,5 @@ logging:
     # 为包设置特定日志级别，可以覆盖上层设定的日志级别
     org.springframework: warn
     org.apache: warn
-    org.mybatis: warn
+    org.hibernate.SQL: debug
     run.wyatt.oneplatform: info
-    run.wyatt.oneplatform.dao: debug # 设为debug可以查看SQL

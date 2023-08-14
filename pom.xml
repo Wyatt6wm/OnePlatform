@@ -60,6 +60,11 @@
         </dependency>
 
         <!-- ========== 持久层 ========== -->
+        <!-- Spring Data JPA ORM框架 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
         <!-- MyBatis ORM框架 -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>

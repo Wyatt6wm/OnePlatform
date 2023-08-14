@@ -4,15 +4,16 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import run.wyatt.oneplatform.dao.AuthDao;
-import run.wyatt.oneplatform.dao.RoleAuthDao;
+import org.springframework.util.Assert;
 import run.wyatt.oneplatform.model.constant.RedisConst;
 import run.wyatt.oneplatform.model.constant.RoleConst;
 import run.wyatt.oneplatform.model.entity.Auth;
 import run.wyatt.oneplatform.model.exception.BusinessException;
+import run.wyatt.oneplatform.repository.AuthRepository;
+import run.wyatt.oneplatform.repository.RoleAuthRepository;
 import run.wyatt.oneplatform.service.AuthService;
 import run.wyatt.oneplatform.service.RoleService;
 
@@ -31,76 +32,67 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private RedisTemplate<String, Object> redis;
     @Autowired
-    private AuthDao authDao;
+    private AuthRepository authRepository;
     @Autowired
-    private RoleAuthDao roleAuthDao;
+    private RoleAuthRepository roleAuthRepository;
     @Autowired
     private RoleService roleService;
 
     @Override
     public Auth createAuth(Auth auth) {
         log.info("输入参数: {}", auth);
+        Assert.notNull(auth, "输入参数为空");
 
-        long rows = 0;
         try {
+            log.info("插入记录");
             auth.setId(null);
-            rows = authDao.insert(auth);
-        } catch (DuplicateKeyException e) {
+            auth = authRepository.save(auth);
+            log.info("成功插入记录: id={}", auth.getId());
+        } catch (DataIntegrityViolationException e) {
             log.info(e.getMessage());
             throw new BusinessException("权限标识符重复");
         }
 
-        if (rows == 0) {
-            throw new BusinessException("创建权限失败");
-        } else {
-            log.info("成功创建权限: authId={}", auth.getId());
-            try {
-                roleService.grant(RoleConst.SUPER_ADMIN_ID, auth.getId());
-            } catch (Exception e) {
-                log.info("自动授权给超级管理员失败，须手动授权");
-                updateAuthDbChangeTime();
-            }
-            return auth;
-        }
-    }
-
-    @Override
-    public void removeAuth(Long authId) {
-        log.info("输入参数: authId={}", authId);
-
-        if (authDao.delete(authId) == 0) {
-            throw new BusinessException("该权限数据不存在");
-        } else {
-            roleAuthDao.deleteByAuthId(authId);
-            updateAuthDbChangeTime();
-            log.info("成功删除权限");
-        }
-    }
-
-    @Override
-    public Auth updateAuth(Long authId, Auth auth) {
-        log.info("输入参数: authId={}, auth={}", authId, auth);
-
-        if (authId == null) {
-            throw new BusinessException("权限ID错误");
-        }
-
-        long rows = 0;
         try {
-            rows = authDao.update(authId, auth);
-        } catch (DuplicateKeyException e) {
+            log.info("自动授权给超级管理员");
+            roleService.grant(RoleConst.SUPER_ADMIN_ID, auth.getId());
+        } catch (BusinessException e) {
+            log.info("自动授权给超级管理员失败，须手动授权");
+        }
+
+        return auth;
+    }
+
+    @Override
+    public void removeAuth(Long id) {
+        log.info("输入参数: id={}", id);
+        Assert.notNull(id, "输入参数为空");
+
+        log.info("删除与本权限相关的角色-权限关联关系");
+        roleAuthRepository.deleteByAuthId(id);
+        log.info("删除本权限记录");
+        authRepository.deleteById(id);
+
+        log.info("更新“权限数据库变更时间”时间戳");
+        updateAuthDbChangeTime();
+    }
+
+    @Override
+    public Auth updateAuth(Auth auth) {
+        log.info("输入参数: {}", auth);
+        Assert.notNull(auth, "输入参数为空");
+        Assert.notNull(auth.getId(), "id为null");
+
+        try {
+            log.info("更新记录");
+            authRepository.save(auth);
+            log.info("更新“权限数据库变更时间”时间戳");
+            updateAuthDbChangeTime();
+            return auth;
+        } catch (DataIntegrityViolationException e) {
             log.info(e.getMessage());
             throw new BusinessException("权限标识符重复");
         }
-
-        if (rows == 0) {
-            throw new BusinessException("该权限数据不存在");
-        }
-
-        updateAuthDbChangeTime();
-        log.info("成功更新权限记录");
-        auth.setId(authId);
-        return auth;
     }
 
     @Override
@@ -111,7 +103,8 @@ public class AuthServiceImpl implements AuthService {
         log.info("已更新authDbChanged缓存为: {}", sdf.format(now));
     }
 
-    private void updateAuthRedisChangeTime() {
+    @Override
+    public void updateAuthRedisChangeTime() {
         Date now = new Date();
         StpUtil.getSession().set(RedisConst.AUTH_REDIS_CHANGE_TIME, now);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
@@ -165,11 +158,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public List<String> getActivatedAuthIdentifiers(Long userId) {
         log.info("输入参数: userId={}", userId);
+        Assert.notNull(userId, "userId为null");
 
         Date t1 = (Date) redis.opsForValue().get(RedisConst.AUTH_DB_CHANGE_TIME);
         Date t2 = (Date) StpUtil.getSession().get(RedisConst.AUTH_REDIS_CHANGE_TIME);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("数据库更新时间： {}", t1 == null ? null : sdf.format(t1));
+        log.info("数据库更新时间: {}", t1 == null ? null : sdf.format(t1));
         log.info("缓存更新时间: {}", t2 == null ? null : sdf.format(t2));
 
         List<String> auths = null;
@@ -180,14 +174,15 @@ public class AuthServiceImpl implements AuthService {
 
         if (auths == null) {
             log.info("无缓存或缓存不是最新，查询数据库，并更新缓存");
-            List<Auth> activatedAuths = authDao.findActivatedByUserId(userId);
+            List<Auth> activatedAuths = authRepository.findActivatedByUserId(userId);
+            log.info("提取标识符字符串列表");
             auths = new ArrayList<>();
             for (Auth item : activatedAuths) {
                 auths.add(item.getIdentifier());
             }
-            log.info("完成标识符字符串列表提取");
+            log.info("更新缓存");
             StpUtil.getSession().set(RedisConst.AUTHS, auths);
-            log.info("已更新缓存");
+            log.info("更新authRedisChangeTime时间戳，更新refreshAuthRedis标记为0");
             updateAuthRedisChangeTime();
             setRefreshAuthRedisFalse(userId);
         }
@@ -198,16 +193,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public List<Auth> listAuths() {
-        List<Auth> authList = authDao.findAll();
-        log.info("成功查询全部权限: {}", authList);
+        log.info("查询全部权限");
+        List<Auth> authList = authRepository.findAll();
+        log.info("查询结果: {}", authList);
         return authList;
     }
 
     @Override
     public List<Auth> listAuths(Long roleId) {
         log.info("输入参数: roleId={}", roleId);
-        List<Auth> auths = authDao.findByRoleId(roleId);
-        log.info("角色 {} 的权限列表: {}", roleId, auths);
+        Assert.notNull(roleId, "roleId为null");
+
+        List<Auth> auths = authRepository.findByRoleId(roleId);
+        log.info("查询结果: {}", auths);
         return auths;
     }
 }

@@ -21,24 +21,29 @@ public interface AuthService {
     /**
      * 删除权限记录
      *
-     * @param authId 要删除的权限ID
+     * @param id 要删除的权限ID
      */
-    void removeAuth(Long authId);
+    void removeAuth(Long id);
 
     /**
-     * 根据权限ID更新权限记录
+     * 更新权限
      *
-     * @param authId 要更新的权限ID
-     * @param auth   新的权限数据
+     * @param auth 新的权限数据（id非空）
      * @return 更新后的权限对象
      */
-    Auth updateAuth(Long authId, Auth auth);
+    Auth updateAuth(Auth auth);
 
     /**
      * 数据库权限表变更时间更新到Redis
      * 权限本身及角色绑定权限的关系发生变化时都应调用
      */
     void updateAuthDbChangeTime();
+
+    /**
+     * Redis缓存中的权限更新时间戳
+     * 当有更新Redis缓存中的权限时都应调用
+     */
+    void updateAuthRedisChangeTime();
 
     void setRefreshAuthRedisTrue(Long userId);
 

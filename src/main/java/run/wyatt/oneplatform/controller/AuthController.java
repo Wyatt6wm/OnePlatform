@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.model.constant.RoleConst;
 import run.wyatt.oneplatform.model.entity.Auth;
+import run.wyatt.oneplatform.model.entity.RoleAuth;
 import run.wyatt.oneplatform.model.form.AuthForm;
 import run.wyatt.oneplatform.model.http.MapData;
 import run.wyatt.oneplatform.model.http.R;
+import run.wyatt.oneplatform.repository.AuthRepository;
+import run.wyatt.oneplatform.repository.RoleAuthRepository;
 import run.wyatt.oneplatform.service.AuthService;
 
 import java.util.List;
@@ -41,21 +45,13 @@ public class AuthController {
     @PostMapping("/addAuth")
     public R addAuth(@RequestBody AuthForm authForm) {
         log.info("请求参数: {}", authForm);
-        Assert.notNull(authForm, "请求参数为null");
-        Assert.hasText(authForm.getIdentifier(), "权限标识符为空");
+        Assert.notNull(authForm, "请求参数为空");
+        Assert.hasText(authForm.getIdentifier(), "identifier为null");
 
-        String identifier = authForm.getIdentifier();
-        String name = authForm.getName();
-        String description = authForm.getDescription();
-        Boolean activated = authForm.getActivated();
+        log.info("AuthForm转换为Auth");
+        Auth auth = authForm.convert();
 
-        Auth auth = new Auth();
-        auth.setIdentifier(identifier.trim());
-        auth.setName((name != null) ? name.trim() : null);
-        auth.setDescription((description != null) ? description.trim() : null);
-        auth.setActivated(activated);
-
-        log.info("完成组装，新增权限");
+        log.info("创建权限");
         Auth newAuth = authService.createAuth(auth);
 
         MapData data = new MapData();
@@ -66,13 +62,13 @@ public class AuthController {
     @ApiOperation("删除权限")
     @SaCheckLogin
     @SaCheckRole(RoleConst.SUPER_ADMIN_IDENTIFIER)
-    @GetMapping("/removeAuth")
-    public R removeAuth(@RequestParam("authId") Long authId) {
-        log.info("请求参数: authId={}", authId);
-        Assert.notNull(authId, "权限ID为null");
+    @GetMapping("/removeAuth/{id}")
+    public R removeAuth(@PathVariable("id") Long id) {
+        log.info("请求参数: id={}", id);
+        Assert.notNull(id, "请求参数为空");
 
         log.info("删除权限");
-        authService.removeAuth(authId);
+        authService.removeAuth(id);
         return R.success();
     }
 
@@ -82,23 +78,14 @@ public class AuthController {
     @PostMapping("/editAuth")
     public R editAuth(@RequestBody AuthForm authForm) {
         log.info("请求参数: {}", authForm);
-        Assert.notNull(authForm, "请求参数为null");
-        Assert.notNull(authForm.getId(), "权限ID为null");
+        Assert.notNull(authForm, "请求参数为空");
+        Assert.notNull(authForm.getId(), "id为null");
 
-        Long id = authForm.getId();
-        String identifier = authForm.getIdentifier();
-        String name = authForm.getName();
-        String description = authForm.getDescription();
-        Boolean activated = authForm.getActivated();
+        log.info("AuthForm转换为Auth");
+        Auth auth = authForm.convert();
 
-        Auth auth = new Auth();
-        auth.setIdentifier((identifier != null) ? identifier.trim() : null);
-        auth.setName((name != null) ? name.trim() : null);
-        auth.setDescription((description != null) ? description.trim() : null);
-        auth.setActivated(activated);
-
-        log.info("完成组装，更新权限");
-        Auth newAuth = authService.updateAuth(id, auth);
+        log.info("更新权限");
+        Auth newAuth = authService.updateAuth(auth);
 
         MapData data = new MapData();
         data.put("auth", newAuth);
@@ -110,7 +97,7 @@ public class AuthController {
     @SaCheckRole(value = {RoleConst.SUPER_ADMIN_IDENTIFIER, RoleConst.ADMIN_IDENTIFIER}, mode = SaMode.OR)
     @GetMapping("/getAuthManageList")
     public R getAuthManageList() {
-        log.info("查询全部权限");
+        log.info("获取权限管理列表");
         List<Auth> authManageList = authService.listAuths();
 
         MapData data = new MapData();

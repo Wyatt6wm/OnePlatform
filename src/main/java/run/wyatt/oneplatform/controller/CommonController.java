@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import run.wyatt.oneplatform.model.exception.BusinessException;
 import run.wyatt.oneplatform.model.http.R;
 import run.wyatt.oneplatform.service.CaptchaService;
+import run.wyatt.oneplatform.service.IdService;
 
 /**
  * 公共API，不属于任何一部分的、公用的API放在这里
@@ -24,6 +25,8 @@ import run.wyatt.oneplatform.service.CaptchaService;
 public class CommonController {
     @Autowired
     private CaptchaService captchaService;
+    @Autowired
+    private IdService idService;
 
     /**
      * 获取验证码
@@ -37,6 +40,21 @@ public class CommonController {
             return R.success(captchaService.generateCaptcha());
         } catch (Exception e) {
             throw new BusinessException("获取验证码错误");
+        }
+    }
+
+    /**
+     * 获取雪花算法生成的全局唯一ID
+     *
+     * @return ID
+     */
+    @ApiOperation("获取雪花ID")
+    @GetMapping("/getSnowflakeId")
+    public R getSnowflakeId() {
+        try {
+            return R.success(idService.generateSnowflakeId());
+        } catch (Exception e) {
+            throw new BusinessException(e.getMessage());
         }
     }
 }

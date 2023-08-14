@@ -5,6 +5,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import run.wyatt.oneplatform.model.exception.DatabaseException;
@@ -16,25 +17,25 @@ import run.wyatt.oneplatform.model.exception.DatabaseException;
 @Slf4j
 @Aspect
 @Component
-public class DaoAspect {
+public class RepositoryAspect {
     /**
      * DAO切面
      */
-    @Pointcut("bean(*Dao)")
-    public void daoPointcut() {
+    @Pointcut("within(run.wyatt.oneplatform.repository.*)")
+    public void repositoryPointcut() {
         // 方法为空，仅用来定义切入点，逻辑另外实现。
     }
 
     /**
-     * Advice: Dao抛出异常后打印的日志
+     * Advice: Repository抛出异常后打印的日志
      *
      * @param joinPoint 切点
      * @param e         异常
      */
-    @AfterThrowing(pointcut = "daoPointcut()", throwing = "e")
-    public void daoAfterThrowingLogAdvice(JoinPoint joinPoint, Exception e) {
+    @AfterThrowing(pointcut = "repositoryPointcut()", throwing = "e")
+    public void repositoryAfterThrowingLogAdvice(JoinPoint joinPoint, Exception e) {
         // 根据数据库异常类型推断业务异常信息的异常，拦截抛出
-        if (e instanceof DuplicateKeyException) {
+        if (e instanceof DataIntegrityViolationException) {
             return;
         }
 

@@ -9,7 +9,7 @@ import run.wyatt.oneplatform.model.entity.Todo;
 import run.wyatt.oneplatform.model.entity.TodoLog;
 import run.wyatt.oneplatform.model.exception.BusinessException;
 import run.wyatt.oneplatform.service.TodoLogService;
-import run.wyatt.oneplatform.util.UUIDUtil;
+import run.wyatt.oneplatform.util.UuidUtil;
 
 import java.util.Collection;
 import java.util.Date;
@@ -33,7 +33,7 @@ public class TodoLogServiceImpl implements TodoLogService {
 
         // 创建日志记录
         TodoLog todoLog = new TodoLog();
-        todoLog.setUuid(UUIDUtil.generateUuid());
+        todoLog.setUuid(UuidUtil.generateUuid());
         todoLog.setTenant(tenant);
         todoLog.setTodoUuid(todoUuid);
         todoLog.setTitle(title);

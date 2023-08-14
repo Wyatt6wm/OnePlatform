@@ -5,14 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import run.wyatt.oneplatform.dao.AuthDao;
-import run.wyatt.oneplatform.dao.RoleDao;
-import run.wyatt.oneplatform.dao.UserDao;
-import run.wyatt.oneplatform.dao.UserRoleDao;
+import org.springframework.util.Assert;
 import run.wyatt.oneplatform.model.constant.RedisConst;
 import run.wyatt.oneplatform.model.constant.RoleConst;
 import run.wyatt.oneplatform.model.entity.User;
+import run.wyatt.oneplatform.model.entity.UserRole;
 import run.wyatt.oneplatform.model.exception.BusinessException;
+import run.wyatt.oneplatform.repository.AuthRepository;
+import run.wyatt.oneplatform.repository.RoleRepository;
+import run.wyatt.oneplatform.repository.UserRepository;
+import run.wyatt.oneplatform.repository.UserRoleRepository;
 import run.wyatt.oneplatform.service.AuthService;
 import run.wyatt.oneplatform.service.RoleService;
 import run.wyatt.oneplatform.service.UserService;
@@ -33,13 +35,19 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RedisTemplate<String, Object> redis;
     @Autowired
-    private UserDao userDao;
+    private UserRepository userRepository;
+    //    @Autowired
+//    private UserRoleDao userRoleDao;
     @Autowired
-    private UserRoleDao userRoleDao;
+    private UserRoleRepository userRoleRepository;
+    //    @Autowired
+//    private RoleDao roleDao;
     @Autowired
-    private RoleDao roleDao;
+    private RoleRepository roleRepository;
+    //    @Autowired
+//    private AuthDao authDao;
     @Autowired
-    private AuthDao authDao;
+    private AuthRepository authRepository;
     @Autowired
     private RoleService roleService;
     @Autowired
@@ -58,48 +66,43 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(String username, String password) {
         log.info("输入参数: username={} password=*", username);
+        Assert.notNull(username, "username为null");
+        Assert.notNull(password, "password为null");
 
-        // 判断用户是否已被注册
-        if (userDao.findByUsername(username) != null) {
+        log.info("判断用户是否已被注册");
+        if (userRepository.findByUsername(username) != null) {
             throw new BusinessException("用户已注册");
         }
 
-        // 密码加密
+        log.info("密码加密");
         String salt = PasswordUtil.generateSalt();
         String encryptedPassword = PasswordUtil.encode(password, salt);
-        log.info("密码加密完成");
 
-        // 保存到数据库
+        log.info("保存记录");
         User record = new User();
         record.setId(null);
         record.setUsername(username);
         record.setPassword(encryptedPassword);
         record.setSalt(salt);
+        User newUser = userRepository.save(record);
+        log.info("用户成功注册到数据库: userId={}", newUser.getId());
 
-        if (userDao.insert(record) == 1) {
-            log.info("用户成功注册到数据库: userId={}", record.getId());
-
-            // 为用户绑定默认角色
-            try {
-                bind(record.getId(), RoleConst.DEFAULT_ID);
-                log.info("成功为新注册用户绑定默认角色");
-            } catch (Exception e) {
-                throw new BusinessException("用户绑定默认角色失败");
-            }
-
-            log.info("创建用户成功完成");
-            return record;
-        } else {
-            throw new BusinessException("用户创建失败");
+        try {
+            log.info("为新注册用户绑定默认角色");
+            bind(record.getId(), RoleConst.DEFAULT_ID);
+        } catch (Exception e) {
+            throw new BusinessException("用户绑定默认角色失败，须手动绑定");
         }
+
+        return newUser;
     }
 
     @Override
     public void bind(Long userId, Long roleId) {
         log.info("输入参数: userId={}, roleId={}", userId, roleId);
-        if (userId == null || roleId == null) {
-            throw new BusinessException("参数错误");
-        }
+        Assert.notNull(userId, "userId为null");
+        Assert.notNull(roleId, "roleId为null");
+
         if (roleId.equals(RoleConst.SUPER_ADMIN_ID)) {
             throw new BusinessException("无法为指定用户绑定超级管理员");
         }
@@ -107,7 +110,10 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("权限不足，无法为指定用户绑定管理员");
         }
 
-        if (userRoleDao.insert(userId, roleId) == 1) {
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setRoleId(roleId);
+        if (userRoleRepository.save(userRole)) {
             log.info("绑定成功");
         } else {
             throw new BusinessException("绑定失败");
@@ -121,7 +127,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<Long> bind(Long userId, List<Long> roleIds) {
         log.info("输入参数: userId={}, roleIds={}", userId, roleIds);
-        if (userId == null || roleIds == null) throw new BusinessException("参数错误");
+        Assert.notNull(userId, "userId为null");
+        Assert.notNull(roleIds, "roleIds为null");
 
         List<Long> failList = new ArrayList<>();
         for (Long roleId : roleIds) {
@@ -133,14 +140,16 @@ public class UserServiceImpl implements UserService {
                     throw new BusinessException("权限不足，无法为指定用户绑定管理员");
                 }
 
-                userRoleDao.insert(userId, roleId);
+                UserRole userRole = new UserRole();
+                userRole.setUserId(userId);
+                userRole.setRoleId(roleId);
+                userRoleRepository.save(userRole);
                 log.info("bind: (userId={}, roleId={})", userId, roleId);
             } catch (Exception e) {
                 log.info(e.getMessage());
                 failList.add(roleId);
             }
         }
-        log.info("绑定失败的roleId：{}", failList);
 
         if (failList.size() < roleIds.size()) {
             log.info("有绑定成功，为用户标记须更新角色和权限标识符缓存");
@@ -148,6 +157,7 @@ public class UserServiceImpl implements UserService {
             authService.setRefreshAuthRedisTrue(userId);
         }
 
+        log.info("绑定失败的roleId：{}", failList);
         return failList;
     }
 

@@ -9,7 +9,7 @@ import lombok.Data;
  * @date 2023/6/2 17:28
  */
 @Data
-public class LoginForm {
+public class UserForm {
     private String username;
     private String password;
     private String captchaKey;

@@ -32,18 +32,12 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
     @Autowired
     private RedisTemplate<String, Object> redis;
-    //    @Autowired
-//    private RoleDao roleDao;
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
     private RoleAuthRepository roleAuthRepository;
     @Autowired
     private UserRoleRepository userRoleRepository;
-    //    @Autowired
-//    private RoleAuthDao roleAuthDao;
-//    @Autowired
-//    private UserRoleDao userRoleDao;
     @Autowired
     private AuthService authService;
 

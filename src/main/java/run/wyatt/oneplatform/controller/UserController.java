@@ -21,9 +21,8 @@ import run.wyatt.oneplatform.model.entity.Role;
 import run.wyatt.oneplatform.model.entity.User;
 import run.wyatt.oneplatform.model.exception.BusinessException;
 import run.wyatt.oneplatform.model.form.BindForm;
-import run.wyatt.oneplatform.model.form.LoginForm;
 import run.wyatt.oneplatform.model.form.ProfileForm;
-import run.wyatt.oneplatform.model.form.RegistryForm;
+import run.wyatt.oneplatform.model.form.UserForm;
 import run.wyatt.oneplatform.model.http.MapData;
 import run.wyatt.oneplatform.model.http.R;
 import run.wyatt.oneplatform.service.AuthService;
@@ -54,17 +53,17 @@ public class UserController {
 
     @ApiOperation("注册用户")
     @PostMapping("/registry")
-    public R registry(@RequestBody RegistryForm registryForm) {
-        Assert.notNull(registryForm, "请求参数为null");
-        Assert.notNull(registryForm.getUsername(), "用户名为null");
-        Assert.notNull(registryForm.getPassword(), "密码为null");
-        Assert.notNull(registryForm.getCaptchaKey(), "验证码KEY为null");
-        Assert.notNull(registryForm.getCaptchaInput(), "验证码为null");
+    public R registry(@RequestBody UserForm userForm) {
+        Assert.notNull(userForm, "请求参数为空");
+        Assert.notNull(userForm.getUsername(), "用户名为null");
+        Assert.notNull(userForm.getPassword(), "密码为null");
+        Assert.notNull(userForm.getCaptchaKey(), "验证码KEY为null");
+        Assert.notNull(userForm.getCaptchaInput(), "验证码为null");
 
-        String username = registryForm.getUsername();
-        String password = registryForm.getPassword();
-        String captchaKey = registryForm.getCaptchaKey();
-        String captchaInput = registryForm.getCaptchaInput();
+        String username = userForm.getUsername();
+        String password = userForm.getPassword();
+        String captchaKey = userForm.getCaptchaKey();
+        String captchaInput = userForm.getCaptchaInput();
         log.info("请求参数: username={}, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
@@ -94,17 +93,17 @@ public class UserController {
 
     @ApiOperation("登录认证")
     @PostMapping("/login")
-    public R login(@RequestBody LoginForm loginForm) {
-        Assert.notNull(loginForm, "请求参数为null");
-        Assert.notNull(loginForm.getUsername(), "用户名为null");
-        Assert.notNull(loginForm.getPassword(), "密码为null");
-        Assert.notNull(loginForm.getCaptchaKey(), "验证码KEY为null");
-        Assert.notNull(loginForm.getCaptchaInput(), "验证码为null");
+    public R login(@RequestBody UserForm userForm) {
+        Assert.notNull(userForm, "请求参数为null");
+        Assert.notNull(userForm.getUsername(), "用户名为null");
+        Assert.notNull(userForm.getPassword(), "密码为null");
+        Assert.notNull(userForm.getCaptchaKey(), "验证码KEY为null");
+        Assert.notNull(userForm.getCaptchaInput(), "验证码为null");
 
-        String username = loginForm.getUsername();
-        String password = loginForm.getPassword();
-        String captchaKey = loginForm.getCaptchaKey();
-        String captchaInput = loginForm.getCaptchaInput();
+        String username = userForm.getUsername();
+        String password = userForm.getPassword();
+        String captchaKey = userForm.getCaptchaKey();
+        String captchaInput = userForm.getCaptchaInput();
         log.info("请求参数: username={}, captchaKey={}, captchaInput={}", username, captchaKey, captchaInput);
 
         // 格式校验
@@ -241,7 +240,7 @@ public class UserController {
     @GetMapping("/getRolesOfUser")
     public R getRolesOfUser(@RequestParam("userId") Long roleId) {
         log.info("请求参数: userId={}", roleId);
-        Assert.notNull(roleId, "请求参数为null");
+        Assert.notNull(roleId, "请求参数为空");
 
         log.info("查询用户的全部角色");
         List<Role> roles = roleService.listRoles(roleId);

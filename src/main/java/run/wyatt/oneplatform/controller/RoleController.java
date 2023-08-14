@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,21 +47,13 @@ public class RoleController {
     @PostMapping("/addRole")
     public R addRole(@RequestBody RoleForm roleForm) {
         log.info("请求参数: {}", roleForm);
-        Assert.notNull(roleForm, "请求参数为null");
-        Assert.hasText(roleForm.getIdentifier(), "角色标识符为空");
+        Assert.notNull(roleForm, "请求参数为空");
+        Assert.hasText(roleForm.getIdentifier(), "identifier为null");
 
-        String identifier = roleForm.getIdentifier();
-        String name = roleForm.getName();
-        String description = roleForm.getDescription();
-        Boolean activated = roleForm.getActivated();
+        log.info("RoleForm转换为Role");
+        Role role = roleForm.convert();
 
-        Role role = new Role();
-        role.setIdentifier(identifier.trim());
-        role.setName((name != null) ? name.trim() : null);
-        role.setDescription((description != null) ? description.trim() : null);
-        role.setActivated(activated);
-
-        log.info("完成组装，新增角色");
+        log.info("创建角色");
         Role newRole = roleService.createRole(role);
 
         MapData data = new MapData();
@@ -74,12 +67,22 @@ public class RoleController {
     @PostMapping("/changeGrants")
     public R changeGrants(@RequestBody GrantForm grantForm) {
         log.info("请求参数: {}", grantForm);
-        Assert.notNull(grantForm, "请求参数为null");
+        Assert.notNull(grantForm, "请求参数为空");
 
-        List<Long> failGrant = roleService.grant(grantForm.getRoleId(), grantForm.getGrantList());
-        log.info("授权完成");
-        List<Long> failUngrant = roleService.ungrant(grantForm.getRoleId(), grantForm.getUngrantList());
-        log.info("解除授权完成");
+        List<Long> failGrant = null;
+        List<Long> failUngrant = null;
+        try {
+            log.info("授权");
+            failGrant = roleService.grant(grantForm.getRoleId(), grantForm.getGrantList());
+        } catch (IllegalArgumentException e) {
+            log.info("无须授权");
+        }
+        try {
+            log.info("解除授权");
+            failUngrant = roleService.ungrant(grantForm.getRoleId(), grantForm.getUngrantList());
+        } catch (IllegalArgumentException e) {
+            log.info("无须解除授权");
+        }
 
         MapData data = new MapData();
         data.put("failGrant", failGrant);
@@ -90,10 +93,10 @@ public class RoleController {
     @ApiOperation("删除角色")
     @SaCheckLogin
     @SaCheckRole(RoleConst.SUPER_ADMIN_IDENTIFIER)
-    @GetMapping("/removeRole")
-    public R removeRole(@RequestParam("roleId") Long roleId) {
+    @GetMapping("/removeRole/{roleId}")
+    public R removeRole(@PathVariable("roleId") Long roleId) {
         log.info("请求参数: roleId={}", roleId);
-        Assert.notNull(roleId, "角色ID为null");
+        Assert.notNull(roleId, "请求参数为空");
 
         log.info("删除角色");
         roleService.removeRole(roleId);
@@ -106,23 +109,14 @@ public class RoleController {
     @PostMapping("/editRole")
     public R editRole(@RequestBody RoleForm roleForm) {
         log.info("请求参数: {}", roleForm);
-        Assert.notNull(roleForm, "请求参数为null");
-        Assert.notNull(roleForm.getId(), "角色ID为null");
+        Assert.notNull(roleForm, "请求参数为空");
+        Assert.notNull(roleForm.getId(), "id为null");
 
-        Long id = roleForm.getId();
-        String identifier = roleForm.getIdentifier();
-        String name = roleForm.getName();
-        String description = roleForm.getDescription();
-        Boolean activated = roleForm.getActivated();
+        log.info("RoleForm转换为Role");
+        Role role = roleForm.convert();
 
-        Role role = new Role();
-        role.setIdentifier((identifier != null) ? identifier.trim() : null);
-        role.setName((name != null) ? name.trim() : null);
-        role.setDescription((description != null) ? description.trim() : null);
-        role.setActivated(activated);
-
-        log.info("组装完成，更新角色");
-        Role newRole = roleService.updateRole(id, role);
+        log.info("更新角色");
+        Role newRole = roleService.updateRole(role);
 
         MapData data = new MapData();
         data.put("role", newRole);
@@ -145,10 +139,10 @@ public class RoleController {
     @ApiOperation("获取角色所有权限")
     @SaCheckLogin
     @SaCheckRole(RoleConst.SUPER_ADMIN_IDENTIFIER)
-    @GetMapping("/getAuthsOfRole")
-    public R getAuthsOfRole(@RequestParam("roleId") Long roleId) {
+    @GetMapping("/getAuthsOfRole/{roleId}")
+    public R getAuthsOfRole(@PathVariable("roleId") Long roleId) {
         log.info("请求参数: roleId={}", roleId);
-        Assert.notNull(roleId, "请求参数为null");
+        Assert.notNull(roleId, "请求参数为空");
 
         log.info("查询角色的全部权限");
         List<Auth> auths = authService.listAuths(roleId);

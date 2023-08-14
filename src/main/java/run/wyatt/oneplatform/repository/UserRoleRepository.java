@@ -9,4 +9,5 @@ import run.wyatt.oneplatform.model.entity.support.UserRolePK;
  * @date 2023/8/14
  */
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRolePK> {
+    void deleteByRoleId(Long roleId);
 }

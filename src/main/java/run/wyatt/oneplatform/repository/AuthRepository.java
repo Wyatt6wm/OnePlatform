@@ -19,9 +19,9 @@ public interface AuthRepository extends JpaRepository<Auth, Long> {
 
     @Query("select distinct a.id, a.identifier, a.name, a.description, a.activated " +
             " from UserRole ur " +
-            "      inner join Role r on ur.roleId = r.id and r.activated=1 " +
+            "      inner join Role r on ur.roleId = r.id and r.activated = 1 " +
             "      inner join RoleAuth ra on ur.roleId = ra.roleId " +
-            "      inner join Auth a on ra.authId=a.id and a.activated=1 " +
+            "      inner join Auth a on ra.authId = a.id and a.activated = 1 " +
             " where ur.userId = ?1")
     List<Auth> findActivatedByUserId(Long userId);
 }

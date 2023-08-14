@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
         log.info("删除本权限记录");
         authRepository.deleteById(authId);
 
-        log.info("更新“权限数据库变更时间”时间戳");
+        log.info("更新authDbChangeTime时间戳");
         updateAuthDbChangeTime();
     }
 
@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             log.info("更新记录");
             authRepository.save(auth);
-            log.info("更新“权限数据库变更时间”时间戳");
+            log.info("更新authDbChangeTime时间戳");
             updateAuthDbChangeTime();
             return auth;
         } catch (DataIntegrityViolationException e) {

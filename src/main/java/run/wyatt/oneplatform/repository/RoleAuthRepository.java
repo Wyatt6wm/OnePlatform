@@ -9,5 +9,6 @@ import run.wyatt.oneplatform.model.entity.support.RoleAuthPK;
  * @date 2023/8/14
  */
 public interface RoleAuthRepository extends JpaRepository<RoleAuth, RoleAuthPK> {
+    void deleteByRoleId(Long roleId);
     void deleteByAuthId(Long authId);
 }

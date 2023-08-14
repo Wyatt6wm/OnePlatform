@@ -21,13 +21,13 @@ public interface RoleService {
     /**
      * 授权（绑定roleId和authId）
      *
-     * @param roleId  角色ID
+     * @param roleId 角色ID
      * @param authId 该角色要绑定的权限ID
      */
     void grant(Long roleId, Long authId);
 
     /**
-     * 授权（绑定roleId和authId）
+     * 授权（绑定roleId和authId列表）
      *
      * @param roleId  角色ID
      * @param authIds 该角色要绑定的权限ID列表
@@ -36,7 +36,7 @@ public interface RoleService {
     List<Long> grant(Long roleId, List<Long> authIds);
 
     /**
-     * 取消授权（解除绑定roleId和authId）
+     * 取消授权（解除绑定roleId和authId列表）
      *
      * @param roleId  角色ID
      * @param authIds 该角色要解除绑定的权限ID列表
@@ -54,17 +54,22 @@ public interface RoleService {
     /**
      * 根据角色ID更新角色记录
      *
-     * @param roleId 要更新的角色ID
-     * @param role   新的角色数据
+     * @param role 新的角色数据
      * @return 更新后的角色对象
      */
-    Role updateRole(Long roleId, Role role);
+    Role updateRole(Role role);
 
     /**
      * 数据库角色表变更时间更新到Redis
      * 角色本身及用户绑定角色的关系发生变化时都应调用
      */
     void updateRoleDbChangeTime();
+
+    /**
+     * Redis缓存中的角色更新时间戳
+     * 当有更新Redis缓存中的角色时都应调用
+     */
+    void updateRoleRedisChangeTime();
 
     void setRefreshRoleRedisTrue(Long userId);
 

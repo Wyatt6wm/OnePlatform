@@ -4,16 +4,17 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import run.wyatt.oneplatform.dao.AuthDao;
-import run.wyatt.oneplatform.dao.RoleAuthDao;
-import run.wyatt.oneplatform.dao.RoleDao;
-import run.wyatt.oneplatform.dao.UserRoleDao;
+import org.springframework.util.Assert;
 import run.wyatt.oneplatform.model.constant.RedisConst;
 import run.wyatt.oneplatform.model.entity.Role;
+import run.wyatt.oneplatform.model.entity.RoleAuth;
 import run.wyatt.oneplatform.model.exception.BusinessException;
+import run.wyatt.oneplatform.repository.RoleAuthRepository;
+import run.wyatt.oneplatform.repository.RoleRepository;
+import run.wyatt.oneplatform.repository.UserRoleRepository;
 import run.wyatt.oneplatform.service.AuthService;
 import run.wyatt.oneplatform.service.RoleService;
 
@@ -31,14 +32,18 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
     @Autowired
     private RedisTemplate<String, Object> redis;
+    //    @Autowired
+//    private RoleDao roleDao;
     @Autowired
-    private RoleDao roleDao;
+    private RoleRepository roleRepository;
     @Autowired
-    private AuthDao authDao;
+    private RoleAuthRepository roleAuthRepository;
     @Autowired
-    private RoleAuthDao roleAuthDao;
-    @Autowired
-    private UserRoleDao userRoleDao;
+    private UserRoleRepository userRoleRepository;
+    //    @Autowired
+//    private RoleAuthDao roleAuthDao;
+//    @Autowired
+//    private UserRoleDao userRoleDao;
     @Autowired
     private AuthService authService;
 
@@ -46,33 +51,29 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role createRole(Role role) {
         log.info("输入参数: {}", role);
+        Assert.notNull(role, "输入参数为空");
 
-        long rows = 0;
         try {
-            rows = roleDao.insert(role);
-        } catch (DuplicateKeyException e) {
+            log.info("插入记录");
+            role.setId(null);
+            role = roleRepository.save(role);
+            log.info("成功插入记录: id={}", role.getId());
+            return role;
+        } catch (DataIntegrityViolationException e) {
             log.info(e.getMessage());
             throw new BusinessException("角色标识符重复");
         }
-
-        if (rows == 0) {
-            throw new BusinessException("创建角色失败");
-        }
-
-        updateRoleDbChangeTime();
-        log.info("成功创建角色: roleId={}", role.getId());
-        return role;
     }
 
     @Override
     public void grant(Long roleId, Long authId) {
         log.info("输入参数: roleId={}, authId={}", roleId, authId);
-        if (roleId == null || authId == null) throw new BusinessException("参数错误");
+        Assert.notNull(roleId, "roleId为null");
+        Assert.notNull(authId, "authId为null");
 
-        if (roleAuthDao.insert(roleId, authId) == 1) {
-            log.info("授权成功，为用户标记须更新权限标识符缓存");
-            authService.updateAuthDbChangeTime();
-        } else {
+        List<Long> authIds = new ArrayList<>();
+        authIds.add(authId);
+        if (!grant(roleId, authIds).isEmpty()) {
             throw new BusinessException("授权失败");
         }
     }
@@ -80,89 +81,95 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<Long> grant(Long roleId, List<Long> authIds) {
         log.info("输入参数: roleId={}, authIds={}", roleId, authIds);
-        if (roleId == null || authIds == null) throw new BusinessException("参数错误");
+        Assert.notNull(roleId, "roleId为null");
+        Assert.notNull(authIds, "authIds为null");
 
         List<Long> failList = new ArrayList<>();
         for (Long authId : authIds) {
             try {
-                roleAuthDao.insert(roleId, authId);
+                RoleAuth roleAuth = new RoleAuth();
+                roleAuth.setRoleId(roleId);
+                roleAuth.setAuthId(authId);
+                roleAuthRepository.save(roleAuth);
                 log.info("授权成功: (roleId={}, authId={})", roleId, authId);
             } catch (Exception e) {
                 failList.add(authId);
             }
         }
-        log.info("授权失败的authId：{}", failList);
 
-        // 有授权成功时，要更新标志，以动态更新用户权限缓存
         if (failList.size() < authIds.size()) {
+            log.info("有授权成功，要更新authDbChangeTime时间戳，以动态更新用户权限缓存");
             authService.updateAuthDbChangeTime();
         }
 
+        log.info("授权失败的authIds：{}", failList);
         return failList;
     }
 
     @Override
     public List<Long> ungrant(Long roleId, List<Long> authIds) {
         log.info("输入参数: roleId={}, authIds={}", roleId, authIds);
-        if (roleId == null || authIds == null) throw new BusinessException("参数错误");
+        Assert.notNull(roleId, "roleId为null");
+        Assert.notNull(authIds, "authIds为null");
 
         List<Long> failList = new ArrayList<>();
         for (Long authId : authIds) {
             try {
-                roleAuthDao.delete(roleId, authId);
+                RoleAuth roleAuth = new RoleAuth();
+                roleAuth.setRoleId(roleId);
+                roleAuth.setAuthId(authId);
+                roleAuthRepository.delete(roleAuth);
                 log.info("解除授权成功: (roleId={}, authId={})", roleId, authId);
             } catch (Exception e) {
                 failList.add(authId);
             }
         }
-        log.info("解除授权失败的authId：{}", failList);
 
-        // 有解除授权成功时，要更新标志，以动态更新用户权限缓存
         if (failList.size() < authIds.size()) {
+            log.info("有解除授权成功，要更新authDbChangeTime时间戳，以动态更新用户权限缓存");
             authService.updateAuthDbChangeTime();
         }
 
+        log.info("解除授权失败的authId：{}", failList);
         return failList;
     }
 
     @Override
     public void removeRole(Long roleId) {
         log.info("输入参数: roleId={}", roleId);
+        Assert.notNull(roleId, "输入参数为空");
 
-        if (roleDao.delete(roleId) == 0) {
-            throw new BusinessException("该角色数据不存在");
-        } else {
-            userRoleDao.deleteByRoleId(roleId);
-            roleAuthDao.deleteByRoleId(roleId);
-            updateRoleDbChangeTime();
-            log.info("成功删除角色记录");
-        }
+
+        log.info("删除与本角色相关的用户-角色、角色-权限关联关系");
+        userRoleRepository.deleteByRoleId(roleId);
+        roleAuthRepository.deleteByRoleId(roleId);
+        log.info("删除本权限记录");
+        roleRepository.deleteById(roleId);
+
+        log.info("更新roleDbChangeTime时间戳");
+        updateRoleDbChangeTime();
+        log.info("更新authDbChangeTime时间戳");
+        authService.updateAuthDbChangeTime();
     }
 
     @Override
-    public Role updateRole(Long roleId, Role role) {
-        log.info("输入参数: roleId={}, role={}", roleId, role);
+    public Role updateRole(Role role) {
+        log.info("输入参数: role={}", role);
+        Assert.notNull(role, "输入参数为空");
+        Assert.notNull(role.getId(), "id为null");
 
-        if (roleId == null) {
-            throw new BusinessException("角色ID错误");
-        }
-
-        long rows = 0;
         try {
-            rows = roleDao.update(roleId, role);
-        } catch (DuplicateKeyException e) {
+            log.info("更新记录");
+            role = roleRepository.save(role);
+            log.info("更新roleDbChangeTime时间戳");
+            updateRoleDbChangeTime();
+            log.info("更新authDbChangeTime时间戳");
+            authService.updateAuthDbChangeTime();
+            return role;
+        } catch (DataIntegrityViolationException e) {
             log.info(e.getMessage());
             throw new BusinessException("角色标识符重复");
         }
-
-        if (rows == 0) {
-            throw new BusinessException("该角色数据不存在");
-        }
-
-        updateRoleDbChangeTime();
-        log.info("成功更新角色记录");
-        role.setId(roleId);
-        return role;
     }
 
     @Override
@@ -173,7 +180,8 @@ public class RoleServiceImpl implements RoleService {
         log.info("已更新roleDbChanged缓存为: {}", sdf.format(now));
     }
 
-    private void updateRoleRedisChangeTime() {
+    @Override
+    public void updateRoleRedisChangeTime() {
         Date now = new Date();
         StpUtil.getSession().set(RedisConst.ROLE_REDIS_CHANGE_TIME, now);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
@@ -194,7 +202,7 @@ public class RoleServiceImpl implements RoleService {
             log.info("已设置refreshRoleRedis为: {}", flag);
             return;
         }
-        log.info("用户 {} 未登录，无法设置refreshRoleRedis", userId);
+        log.info("用户{}未登录，无法设置refreshRoleRedis", userId);
     }
 
     @Override
@@ -235,7 +243,7 @@ public class RoleServiceImpl implements RoleService {
         Date t1 = (Date) redis.opsForValue().get(RedisConst.ROLE_DB_CHANGE_TIME);
         Date t2 = (Date) StpUtil.getSession().get(RedisConst.ROLE_REDIS_CHANGE_TIME);
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.SSS");
-        log.info("数据库更新时间： {}", t1 == null ? null : sdf.format(t1));
+        log.info("数据库更新时间: {}", t1 == null ? null : sdf.format(t1));
         log.info("缓存更新时间: {}", t2 == null ? null : sdf.format(t2));
 
         List<String> roles = null;
@@ -246,14 +254,15 @@ public class RoleServiceImpl implements RoleService {
 
         if (roles == null) {
             log.info("无缓存或缓存不是最新，查询数据库，并更新缓存");
-            List<Role> activatedRoles = roleDao.findActivatedByUserId(userId);
+            List<Role> activatedRoles = roleRepository.findActivatedByUserId(userId);
+            log.info("提取标识符字符串列表");
             roles = new ArrayList<>();
             for (Role item : activatedRoles) {
                 roles.add(item.getIdentifier());
             }
-            log.info("完成标识符字符串列表提取");
+            log.info("更新缓存");
             StpUtil.getSession().set(RedisConst.ROLES, roles);
-            log.info("已更新缓存");
+            log.info("更新roleRedisChangeTime时间戳，更新refreshRoleRedis标记为0");
             updateRoleRedisChangeTime();
             setRefreshRoleRedisFalse(userId);
         }
@@ -264,15 +273,16 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<Role> listRoles() {
-        List<Role> roles = roleDao.findAll();
-        log.info("成功查询全部角色: {}", roles);
-        return roles;
+        log.info("查询全部角色");
+        List<Role> roleList = roleRepository.findAll();
+        log.info("查询结果: {}", roleList);
+        return roleList;
     }
 
     @Override
     public List<Role> listRoles(Long userId) {
         log.info("输入参数: userId={}", userId);
-        List<Role> roles = roleDao.findByUserId(userId);
+        List<Role> roles = roleRepository.findByUserId(userId);
         log.info("用户 {} 的角色列表: {}", userId, roles);
         return roles;
     }
